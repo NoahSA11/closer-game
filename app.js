@@ -3,17 +3,21 @@ const state = {
   p2Name: 'Partner 2',
   mode: 'competitive',
   round: 1,
+  totalRounds: 4,
   subjectPlayer: 1,
-  round1Questions: [],
-  round2Questions: [],
+  roundQuestions: [],       // array[round] of question arrays
+  questionsPerRound: 5,     // 5 standard, 6 with spicy
   subjectAnswers: [],
   guesserAnswers: [],
   currentQIndex: 0,
   scores: { p1: 0, p2: 0 },
   streak: 0,
   maxStreak: 0,
-  r1Results: [],
-  r2Results: []
+  roundResults: [],         // array[round] of result arrays
+  speedRound: false,
+  spicyEnabled: false,
+  speedTimer: null,
+  speedTimeLeft: 15
 };
 
 // ─── Utilities ───────────────────────────────────────────────
@@ -35,7 +39,10 @@ function shuffle(arr) {
 }
 
 function getSubjectPlayer() {
-  return state.round === 1 ? state.subjectPlayer : (state.subjectPlayer === 1 ? 2 : 1);
+  // Odd rounds → original coin-flip winner; even rounds → flip
+  return state.round % 2 === 1
+    ? state.subjectPlayer
+    : (state.subjectPlayer === 1 ? 2 : 1);
 }
 
 function getSubjectName() {
@@ -50,12 +57,19 @@ function getGuesserPlayer() {
   return getSubjectPlayer() === 1 ? 'p2' : 'p1';
 }
 
+function isSpeedRound() {
+  return state.speedRound && state.round === state.totalRounds;
+}
+
 // ─── Question Selection ───────────────────────────────────────
 
 function selectQuestions() {
-  const cats = Object.keys(QUESTION_BANK);
+  // Build active category list (spicy opt-in)
+  const cats = Object.keys(QUESTION_BANK).filter(k => k !== 'spicy');
+  if (state.spicyEnabled && QUESTION_BANK.spicy) cats.push('spicy');
+  state.questionsPerRound = cats.length;
 
-  // Shuffle each category's questions independently
+  // Shuffle each category independently
   const byCat = {};
   cats.forEach(cat => {
     byCat[cat] = shuffle(
@@ -65,17 +79,83 @@ function selectQuestions() {
     );
   });
 
-  // Round 1: first question from each of the 5 categories (shuffled order)
-  // Round 2: second question from each — guaranteed no repeats
-  const r1 = cats.map(cat => byCat[cat][0]);
-  const r2 = cats.map(cat => byCat[cat][1] || byCat[cat][0]);
-
-  state.round1Questions = shuffle(r1);
-  state.round2Questions = shuffle(r2);
+  // One question per category per round; wrap if more rounds than questions
+  state.roundQuestions = [];
+  state.roundResults = [];
+  for (let r = 0; r < state.totalRounds; r++) {
+    const roundQs = cats.map(cat => {
+      const pool = byCat[cat];
+      return pool[r < pool.length ? r : r % pool.length];
+    });
+    state.roundQuestions.push(shuffle(roundQs));
+    state.roundResults.push([]);
+  }
 }
 
 function getCurrentQuestions() {
-  return state.round === 1 ? state.round1Questions : state.round2Questions;
+  return state.roundQuestions[state.round - 1];
+}
+
+// ─── Speed Timer ──────────────────────────────────────────────
+
+function startSpeedTimer(timerElId, ringId, numId, onExpire) {
+  clearSpeedTimer();
+  state.speedTimeLeft = 15;
+  updateTimerDisplay(ringId, numId, 15);
+  const timerEl = document.getElementById(timerElId);
+  if (timerEl) timerEl.style.display = 'flex';
+
+  state.speedTimer = setInterval(() => {
+    state.speedTimeLeft--;
+    updateTimerDisplay(ringId, numId, state.speedTimeLeft);
+    if (state.speedTimeLeft <= 0) {
+      clearSpeedTimer();
+      onExpire();
+    }
+  }, 1000);
+}
+
+function clearSpeedTimer() {
+  if (state.speedTimer) {
+    clearInterval(state.speedTimer);
+    state.speedTimer = null;
+  }
+}
+
+function updateTimerDisplay(ringId, numId, seconds) {
+  const ring = document.getElementById(ringId);
+  const num = document.getElementById(numId);
+  if (ring) {
+    ring.classList.remove('timer-urgent');
+    if (seconds > 8) {
+      ring.style.background = '#2D6E4E';
+    } else if (seconds > 4) {
+      ring.style.background = '#BF9447';
+    } else {
+      ring.style.background = '#C4756A';
+      ring.classList.add('timer-urgent');
+    }
+  }
+  if (num) num.textContent = seconds;
+}
+
+// ─── Setup UI helpers ────────────────────────────────────────
+
+function selectRounds(n) {
+  document.querySelectorAll('.rounds-btn').forEach(b => b.classList.remove('selected'));
+  const btn = document.querySelector(`.rounds-btn[data-rounds="${n}"]`);
+  if (btn) btn.classList.add('selected');
+}
+
+function toggleOption(id) {
+  const cb = document.getElementById(`toggle-${id}`);
+  const track = document.getElementById(`toggle-${id}-track`);
+  const knob = document.getElementById(`toggle-${id}-knob`);
+  if (!cb) return;
+  cb.checked = !cb.checked;
+  const activeColor = id === 'spicy' ? '#C4756A' : '#1E3A2F';
+  if (track) track.style.background = cb.checked ? activeColor : '#D1C9BE';
+  if (knob) knob.style.transform = cb.checked ? 'translateX(18px)' : 'translateX(0)';
 }
 
 // ─── Setup ────────────────────────────────────────────────────
@@ -89,11 +169,14 @@ function startGame() {
   const modeEl = document.querySelector('input[name="mode"]:checked');
   state.mode = modeEl ? modeEl.value : 'competitive';
 
+  const roundsBtn = document.querySelector('.rounds-btn.selected');
+  state.totalRounds = roundsBtn ? parseInt(roundsBtn.dataset.rounds) : 4;
+  state.speedRound = document.getElementById('toggle-speed')?.checked || false;
+  state.spicyEnabled = document.getElementById('toggle-spicy')?.checked || false;
+
   state.scores = { p1: 0, p2: 0 };
   state.streak = 0;
   state.maxStreak = 0;
-  state.r1Results = [];
-  state.r2Results = [];
   state.round = 1;
 
   selectQuestions();
@@ -128,11 +211,20 @@ function showRoundIntro() {
   showScreen('screen-round-intro');
   const subject = getSubjectName();
   const guesser = getGuesserName();
-  document.getElementById('round-intro-num').textContent = `Round ${state.round} of 2`;
+  const speed = isSpeedRound();
+
+  const roundTag = speed
+    ? `⚡ Speed Round — ${state.round} of ${state.totalRounds}`
+    : `Round ${state.round} of ${state.totalRounds}`;
+  document.getElementById('round-intro-num').textContent = roundTag;
   document.getElementById('round-intro-headline').textContent = `Round ${state.round} is about ${subject}`;
-  document.getElementById('round-intro-desc').textContent =
-    `${subject} answers 5 questions about themselves. Their answers lock — hidden from you. Then ${guesser} guesses what ${subject} chose.`;
+
+  const desc = speed
+    ? `Speed Round! ${subject} answers ${state.questionsPerRound} questions with only 15 seconds each. Answers lock, then ${guesser} does the same. Fast answers, same stakes.`
+    : `${subject} answers ${state.questionsPerRound} questions about themselves. Their answers lock — hidden from you. Then ${guesser} guesses what ${subject} chose.`;
+  document.getElementById('round-intro-desc').textContent = desc;
   document.getElementById('round-intro-btn').textContent = `Begin — ${subject} goes first`;
+
   state.subjectAnswers = [];
   state.guesserAnswers = [];
   state.currentQIndex = 0;
@@ -142,14 +234,19 @@ function showRoundIntro() {
 
 function showSubjectQuestion() {
   showScreen('screen-subject');
+  clearSpeedTimer();
   const q = getCurrentQuestions()[state.currentQIndex];
   const subject = getSubjectName();
 
   document.getElementById('subject-label').textContent = `${subject}, answer for yourself`;
-  document.getElementById('subject-progress-text').textContent = `${state.currentQIndex + 1} of 5`;
+  document.getElementById('subject-progress-text').textContent = `${state.currentQIndex + 1} of ${state.questionsPerRound}`;
   document.getElementById('subject-category-tag').textContent = q.categoryLabel;
   document.getElementById('subject-q-text').textContent = q.text;
-  document.getElementById('subject-progress-bar').style.width = `${(state.currentQIndex / 5) * 100}%`;
+  document.getElementById('subject-progress-bar').style.width = `${(state.currentQIndex / state.questionsPerRound) * 100}%`;
+
+  // Hide timer by default; show only in speed round
+  const timerEl = document.getElementById('subject-speed-timer');
+  if (timerEl) timerEl.style.display = 'none';
 
   const container = document.getElementById('subject-options');
   container.innerHTML = '';
@@ -160,9 +257,17 @@ function showSubjectQuestion() {
     btn.onclick = () => lockSubjectAnswer(idx, btn, container);
     container.appendChild(btn);
   });
+
+  if (isSpeedRound()) {
+    startSpeedTimer('subject-speed-timer', 'subject-timer-ring', 'subject-timer-num', () => {
+      const btns = container.querySelectorAll('.option-btn');
+      if (btns.length && !btns[0].disabled) lockSubjectAnswer(0, btns[0], container);
+    });
+  }
 }
 
 function lockSubjectAnswer(idx, btn, container) {
+  clearSpeedTimer();
   container.querySelectorAll('.option-btn').forEach((b, i) => {
     b.disabled = true;
     b.classList.toggle('selected', i === idx);
@@ -171,7 +276,7 @@ function lockSubjectAnswer(idx, btn, container) {
   setTimeout(() => {
     state.subjectAnswers.push(idx);
     state.currentQIndex++;
-    if (state.currentQIndex < 5) {
+    if (state.currentQIndex < state.questionsPerRound) {
       showSubjectQuestion();
     } else {
       showHandoff();
@@ -195,15 +300,19 @@ function showHandoff() {
 
 function showGuesserQuestion() {
   showScreen('screen-guesser');
+  clearSpeedTimer();
   const q = getCurrentQuestions()[state.currentQIndex];
   const subject = getSubjectName();
   const guesser = getGuesserName();
 
   document.getElementById('guesser-label').textContent = `${guesser} — what would ${subject} choose?`;
-  document.getElementById('guesser-progress-text').textContent = `${state.currentQIndex + 1} of 5`;
+  document.getElementById('guesser-progress-text').textContent = `${state.currentQIndex + 1} of ${state.questionsPerRound}`;
   document.getElementById('guesser-category-tag').textContent = q.categoryLabel;
   document.getElementById('guesser-q-text').textContent = q.text;
-  document.getElementById('guesser-progress-bar').style.width = `${(state.currentQIndex / 5) * 100}%`;
+  document.getElementById('guesser-progress-bar').style.width = `${(state.currentQIndex / state.questionsPerRound) * 100}%`;
+
+  const timerEl = document.getElementById('guesser-speed-timer');
+  if (timerEl) timerEl.style.display = 'none';
 
   const container = document.getElementById('guesser-options');
   container.innerHTML = '';
@@ -214,9 +323,17 @@ function showGuesserQuestion() {
     btn.onclick = () => lockGuesserAnswer(idx, btn, container);
     container.appendChild(btn);
   });
+
+  if (isSpeedRound()) {
+    startSpeedTimer('guesser-speed-timer', 'guesser-timer-ring', 'guesser-timer-num', () => {
+      const btns = container.querySelectorAll('.option-btn');
+      if (btns.length && !btns[0].disabled) lockGuesserAnswer(0, btns[0], container);
+    });
+  }
 }
 
 function lockGuesserAnswer(idx, btn, container) {
+  clearSpeedTimer();
   container.querySelectorAll('.option-btn').forEach((b, i) => {
     b.disabled = true;
     b.classList.toggle('selected', i === idx);
@@ -225,7 +342,7 @@ function lockGuesserAnswer(idx, btn, container) {
   setTimeout(() => {
     state.guesserAnswers.push(idx);
     state.currentQIndex++;
-    if (state.currentQIndex < 5) {
+    if (state.currentQIndex < state.questionsPerRound) {
       showGuesserQuestion();
     } else {
       startReveal();
@@ -249,11 +366,10 @@ function showRevealQuestion() {
   const subject = getSubjectName();
   const guesser = getGuesserName();
 
-  document.getElementById('reveal-progress').textContent = `${state.currentQIndex + 1} of 5`;
+  document.getElementById('reveal-progress').textContent = `${state.currentQIndex + 1} of ${state.questionsPerRound}`;
   document.getElementById('reveal-category-tag').textContent = q.categoryLabel;
   document.getElementById('reveal-q-text').textContent = q.text;
 
-  // Reset cards
   const cardSubject = document.getElementById('reveal-card-subject');
   const cardGuesser = document.getElementById('reveal-card-guesser');
   const resultBanner = document.getElementById('reveal-result-banner');
@@ -285,12 +401,9 @@ function showRevealQuestion() {
     if (matched) {
       state.streak++;
       if (state.streak > state.maxStreak) state.maxStreak = state.streak;
-
       let pts = 100;
       if (state.streak >= 3) pts += 50;
-
       state.scores[getGuesserPlayer()] += pts;
-
       cardSubject.classList.add('match');
       cardGuesser.classList.add('match');
       setRevealBanner(true, pts, state.streak >= 3);
@@ -301,10 +414,9 @@ function showRevealQuestion() {
       setRevealBanner(false, 0, false);
     }
 
-    const currentResults = state.round === 1 ? state.r1Results : state.r2Results;
-    currentResults.push({ matched, subjectIdx, guesserIdx, question: q });
+    // Store in current round's results array
+    state.roundResults[state.round - 1].push({ matched, subjectIdx, guesserIdx, question: q });
 
-    // Score display
     document.getElementById('reveal-p1-name').textContent = state.p1Name;
     document.getElementById('reveal-p2-name').textContent = state.p2Name;
     document.getElementById('reveal-p1-score').textContent = state.scores.p1;
@@ -316,7 +428,7 @@ function showRevealQuestion() {
 
 function nextReveal() {
   state.currentQIndex++;
-  if (state.currentQIndex < 5) {
+  if (state.currentQIndex < state.questionsPerRound) {
     showRevealQuestion();
   } else {
     showRoundSummary();
@@ -327,12 +439,15 @@ function nextReveal() {
 
 function showRoundSummary() {
   showScreen('screen-round-summary');
-  const results = state.round === 1 ? state.r1Results : state.r2Results;
+  const results = state.roundResults[state.round - 1];
   const matchCount = results.filter(r => r.matched).length;
   const guesser = getGuesserName();
+  const speed = isSpeedRound();
 
-  document.getElementById('summary-heading').textContent = `Round ${state.round} Complete`;
-  document.getElementById('summary-match-stat').textContent = `${matchCount} of 5 matched`;
+  document.getElementById('summary-heading').textContent = speed
+    ? '⚡ Speed Round Complete'
+    : `Round ${state.round} Complete`;
+  document.getElementById('summary-match-stat').textContent = `${matchCount} of ${state.questionsPerRound} matched`;
   document.getElementById('summary-guesser').textContent = `${guesser} got ${matchCount} right`;
 
   const dots = document.getElementById('summary-dots');
@@ -351,17 +466,20 @@ function showRoundSummary() {
   document.getElementById('summary-p2-pts').textContent = state.scores.p2;
 
   const nextBtn = document.getElementById('summary-next-btn');
-  if (state.round === 1) {
-    nextBtn.textContent = 'Start Round 2';
-    nextBtn.onclick = goToRound2;
+  if (state.round < state.totalRounds) {
+    const nextIsSpeed = state.speedRound && (state.round + 1) === state.totalRounds;
+    nextBtn.textContent = nextIsSpeed
+      ? `Start Round ${state.round + 1} ⚡`
+      : `Start Round ${state.round + 1}`;
+    nextBtn.onclick = goToNextRound;
   } else {
     nextBtn.textContent = 'See Final Results';
     nextBtn.onclick = showEndScreen;
   }
 }
 
-function goToRound2() {
-  state.round = 2;
+function goToNextRound() {
+  state.round++;
   state.streak = 0;
   state.subjectAnswers = [];
   state.guesserAnswers = [];
@@ -374,9 +492,10 @@ function goToRound2() {
 function showEndScreen() {
   showScreen('screen-end');
 
-  const allResults = [...state.r1Results, ...state.r2Results];
+  const allResults = state.roundResults.flat();
   const matchCount = allResults.filter(r => r.matched).length;
-  const compatPct = Math.round((matchCount / 10) * 100);
+  const totalQuestions = state.totalRounds * state.questionsPerRound;
+  const compatPct = Math.round((matchCount / totalQuestions) * 100);
 
   document.getElementById('end-compat-pct').textContent = `${compatPct}%`;
   document.getElementById('end-compat-label').textContent = getCompatLabel(compatPct);
@@ -396,7 +515,9 @@ function showEndScreen() {
       winnerEl.textContent = "It's a tie — you know each other equally well.";
     }
   } else {
-    winnerEl.textContent = compatPct >= 70 ? 'Strong session. You know each other well.' : 'Good session — some surprises in there.';
+    winnerEl.textContent = compatPct >= 70
+      ? 'Strong session. You know each other well.'
+      : 'Good session — some surprises in there.';
   }
 
   document.getElementById('end-matches').textContent = matchCount;
@@ -417,8 +538,6 @@ function playAgain() {
   state.scores = { p1: 0, p2: 0 };
   state.streak = 0;
   state.maxStreak = 0;
-  state.r1Results = [];
-  state.r2Results = [];
   state.round = 1;
   selectQuestions();
   state.subjectPlayer = Math.random() < 0.5 ? 1 : 2;

@@ -468,5 +468,91 @@ const QUESTION_BANK = {
         ]
       }
     ]
+  },
+  spicy: {
+    label: 'Spicy',
+    icon: '🌶️',
+    questions: [
+      {
+        id: 'sp1',
+        text: "The thing that makes you feel most desired by your partner:",
+        options: [
+          "A genuine compliment out of nowhere",
+          "Physical affection without being asked",
+          "Them being proud of me in front of others",
+          "Undivided, fully present attention"
+        ]
+      },
+      {
+        id: 'sp2',
+        text: "If you could change one thing about how you and your partner handle conflict:",
+        options: [
+          "We'd take more space before responding",
+          "We'd say what we actually mean faster",
+          "We'd end arguments with less lingering tension",
+          "We'd disagree less — find ways to avoid it"
+        ]
+      },
+      {
+        id: 'sp3',
+        text: "The most romantic thing your partner could do this week:",
+        options: [
+          "Plan a date without telling me the details",
+          "Write me a note or send a real message",
+          "Initiate physical closeness more",
+          "Do something thoughtful without being asked"
+        ]
+      },
+      {
+        id: 'sp4',
+        text: "The love language you wish your partner used more often:",
+        options: [
+          "Words — tell me how you feel more often",
+          "Touch — physical presence and closeness",
+          "Quality time — phone down, fully present",
+          "Acts of service — doing things unprompted"
+        ]
+      },
+      {
+        id: 'sp5',
+        text: "The topic you and your partner should probably discuss more openly:",
+        options: [
+          "Money — how we handle it and plan together",
+          "The future — timelines and shared expectations",
+          "A recurring tension that never fully resolves",
+          "What we each need but haven't said out loud"
+        ]
+      },
+      {
+        id: 'sp6',
+        text: "What your partner does that you find most attractive:",
+        options: [
+          "Small acts of care and thoughtfulness",
+          "Confidence in who they are",
+          "When they're genuinely passionate about something",
+          "When we feel close and deeply connected"
+        ]
+      },
+      {
+        id: 'sp7',
+        text: "The time of day you feel most connected to your partner:",
+        options: [
+          "Morning — before the day takes over",
+          "Evening — winding down side by side",
+          "Night — talking with no agenda",
+          "Whenever we're doing something just the two of us"
+        ]
+      },
+      {
+        id: 'sp8',
+        text: "What 'feeling close' to your partner most often looks like:",
+        options: [
+          "A long honest conversation where nothing is held back",
+          "Laughing about something only we'd find funny",
+          "Physical closeness — just being near each other",
+          "Doing something side by side without needing to talk"
+        ]
+      }
+    ]
   }
 };

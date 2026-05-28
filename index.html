@@ -157,6 +157,18 @@
     .mode-card.selected { border-color: #1E3A2F; background: #F0F4F2; }
     .mode-card:hover:not(.selected) { border-color: #3D5E50; }
 
+    /* Rounds selector buttons */
+    .rounds-btn { background: white; transition: all 0.18s ease; }
+    .rounds-btn.selected { border-color: #1E3A2F !important; background: #F0F4F2; }
+    .rounds-btn:hover:not(.selected) { border-color: #3D5E50; }
+
+    /* Speed timer pulse */
+    @keyframes timerPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+    .timer-urgent { animation: timerPulse 0.45s ease-in-out infinite; }
+
     @media (prefers-reduced-motion: reduce) {
       .float-1, .float-2, .float-3, .float-4, .float-5,
       .fade-slide-up, .fade-slide-up-1, .fade-slide-up-2,
@@ -480,6 +492,56 @@
         </div>
       </div>
 
+      <div class="h-px bg-[#E2D9CE] my-6"></div>
+
+      <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-3">Rounds <span class="normal-case font-normal text-[#9A9A9A]">— each round ~5 min</span></p>
+      <div class="grid grid-cols-3 gap-2 mb-6">
+        <button class="rounds-btn py-3 px-2 rounded-xl border-[1.5px] border-[#E2D9CE] text-center cursor-pointer" data-rounds="2" onclick="selectRounds(2)">
+          <div class="font-semibold text-deep text-sm">2 Rounds</div>
+          <div class="text-[10px] text-[#9A9A9A] mt-0.5">~10 min</div>
+        </button>
+        <button class="rounds-btn selected py-3 px-2 rounded-xl border-[1.5px] border-[#E2D9CE] text-center cursor-pointer" data-rounds="4" onclick="selectRounds(4)">
+          <div class="font-semibold text-deep text-sm">4 Rounds</div>
+          <div class="text-[10px] text-[#9A9A9A] mt-0.5">~20 min</div>
+        </button>
+        <button class="rounds-btn py-3 px-2 rounded-xl border-[1.5px] border-[#E2D9CE] text-center cursor-pointer" data-rounds="6" onclick="selectRounds(6)">
+          <div class="font-semibold text-deep text-sm">6 Rounds</div>
+          <div class="text-[10px] text-[#9A9A9A] mt-0.5">~30 min</div>
+        </button>
+      </div>
+
+      <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-3">Options</p>
+      <div class="space-y-3 mb-8">
+        <!-- Speed Round toggle -->
+        <div class="flex items-center justify-between p-3.5 rounded-xl border-[1.5px] border-[#E2D9CE] hover:border-deep transition-colors cursor-pointer" onclick="toggleOption('speed')">
+          <div>
+            <div class="text-sm font-semibold text-deep flex items-center gap-2">
+              ⚡ Speed Round
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#F0E4C4;color:#9A7230;">Last Round</span>
+            </div>
+            <div class="text-[11px] text-[#9A9A9A] mt-0.5">Final round uses a 15-second timer per question</div>
+          </div>
+          <div class="relative ml-4 flex-shrink-0 w-11 h-6 rounded-full" id="toggle-speed-track" style="background:#D1C9BE; transition: background 0.2s;">
+            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm" id="toggle-speed-knob" style="transition: transform 0.18s ease;"></div>
+          </div>
+          <input type="checkbox" id="toggle-speed" class="sr-only">
+        </div>
+        <!-- Spicy Questions toggle -->
+        <div class="flex items-center justify-between p-3.5 rounded-xl border-[1.5px] border-[#E2D9CE] hover:border-rose transition-colors cursor-pointer" onclick="toggleOption('spicy')">
+          <div>
+            <div class="text-sm font-semibold text-deep flex items-center gap-2">
+              🌶️ Spicy Questions
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#EECEC9;color:#9E5047;">Adults</span>
+            </div>
+            <div class="text-[11px] text-[#9A9A9A] mt-0.5">Adds intimate relationship questions to the mix</div>
+          </div>
+          <div class="relative ml-4 flex-shrink-0 w-11 h-6 rounded-full" id="toggle-spicy-track" style="background:#D1C9BE; transition: background 0.2s;">
+            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm" id="toggle-spicy-knob" style="transition: transform 0.18s ease;"></div>
+          </div>
+          <input type="checkbox" id="toggle-spicy" class="sr-only">
+        </div>
+      </div>
+
       <button onclick="startGame()" class="w-full bg-deep text-white font-semibold py-4 rounded-xl hover:bg-deep-mid transition-all hover:-translate-y-0.5 cursor-pointer text-base">
         Start Game →
       </button>
@@ -562,6 +624,14 @@
       </div>
     </div>
 
+    <!-- Speed timer (visible only in speed rounds) -->
+    <div id="subject-speed-timer" style="display:none" class="flex items-center justify-center gap-3 py-3 px-4 bg-white rounded-xl border border-[#E2D9CE] mb-3">
+      <div id="subject-timer-ring" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style="background:#2D6E4E; transition: background 0.5s;">
+        <span id="subject-timer-num" class="text-base font-bold">15</span>
+      </div>
+      <span class="text-sm text-[#5A5A5A] font-medium">seconds to answer</span>
+    </div>
+
     <!-- Question card -->
     <div class="bg-white rounded-2xl shadow-[0_4px_24px_rgba(30,20,10,0.08)] border border-[#E2D9CE] p-7 mb-3">
       <span id="subject-category-tag" class="inline-block bg-rose/15 text-rose text-[11px] font-bold uppercase tracking-[0.08em] px-3 py-1 rounded-full mb-4">Daily Life</span>
@@ -601,6 +671,14 @@
       <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
         <div id="guesser-progress-bar" class="h-full bg-rose rounded-full progress-fill" style="width:0%"></div>
       </div>
+    </div>
+
+    <!-- Speed timer (visible only in speed rounds) -->
+    <div id="guesser-speed-timer" style="display:none" class="flex items-center justify-center gap-3 py-3 px-4 bg-white rounded-xl border border-[#E2D9CE] mb-3">
+      <div id="guesser-timer-ring" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style="background:#2D6E4E; transition: background 0.5s;">
+        <span id="guesser-timer-num" class="text-base font-bold">15</span>
+      </div>
+      <span class="text-sm text-[#5A5A5A] font-medium">seconds to guess</span>
     </div>
 
     <div class="bg-white rounded-2xl shadow-[0_4px_24px_rgba(30,20,10,0.08)] border border-[#E2D9CE] p-7 mb-3">
