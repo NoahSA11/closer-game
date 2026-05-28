@@ -523,6 +523,22 @@ function showEndScreen() {
   document.getElementById('end-matches').textContent = matchCount;
   document.getElementById('end-streak').textContent = state.maxStreak;
 
+  // Persist session to Supabase (fire-and-forget; silently skips if guest)
+  saveGameSession({
+    p1Name:            state.p1Name,
+    p2Name:            state.p2Name,
+    mode:              state.mode,
+    totalRounds:       state.totalRounds,
+    questionsPerRound: state.questionsPerRound,
+    scores:            state.scores,
+    matchCount,
+    totalQuestions,
+    compatPct,
+    maxStreak:         state.maxStreak,
+    spicyEnabled:      state.spicyEnabled,
+    speedRound:        state.speedRound
+  });
+
   triggerConfetti();
 }
 
@@ -578,6 +594,13 @@ function selectMode(mode) {
 
 // ─── Init ─────────────────────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', () => {
-  showScreen('screen-landing');
+document.addEventListener('DOMContentLoaded', async () => {
+  // initAuth() restores existing session + auto-parses OAuth hash on return from Google
+  const user = await initAuth();
+  if (user) {
+    // Returning from Google OAuth redirect, or already signed in — skip to setup
+    initSetup();
+  } else {
+    showScreen('screen-landing');
+  }
 });
