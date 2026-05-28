@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Closer — The Couples Connection Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            display: ['"Great Vibes"', '"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            deep: { DEFAULT: '#1E3A2F', mid: '#2C4A3E', light: '#3D5E50' },
+            rose: { DEFAULT: '#C4756A', light: '#EECEC9', dark: '#9E5047' },
+            gold: { DEFAULT: '#BF9447', light: '#F0E4C4', dark: '#9A7230' },
+            cream: { DEFAULT: '#FAF7F2', alt: '#F2EBE0' },
+            match: { DEFAULT: '#2D6E4E', bg: '#EBF5EF' },
+            miss: { DEFAULT: '#8B4A3A', bg: '#F9EEEC' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Screen system */
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: block; }
+
+    /* Game animations */
+    @keyframes floatUp {
+      0%, 100% { transform: translateY(0px) rotate(-5deg); opacity: 0.4; }
+      50% { transform: translateY(-20px) rotate(5deg); opacity: 0.7; }
+    }
+    @keyframes floatUpSlow {
+      0%, 100% { transform: translateY(0px) rotate(3deg); opacity: 0.3; }
+      50% { transform: translateY(-30px) rotate(-3deg); opacity: 0.6; }
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes coinSpin {
+      0% { transform: rotateY(0deg) scale(1); }
+      40% { transform: rotateY(720deg) scale(1.1); }
+      100% { transform: rotateY(1440deg) scale(1); }
+    }
+    @keyframes matchPulse {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+    @keyframes handoffBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes dotPop {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .float-1 { animation: floatUp 6s ease-in-out infinite; }
+    .float-2 { animation: floatUpSlow 8s ease-in-out infinite 1s; }
+    .float-3 { animation: floatUp 7s ease-in-out infinite 2s; }
+    .float-4 { animation: floatUpSlow 9s ease-in-out infinite 0.5s; }
+    .float-5 { animation: floatUp 5s ease-in-out infinite 3s; }
+
+    .fade-slide-up { animation: fadeSlideUp 0.6s ease forwards; }
+    .fade-slide-up-1 { animation: fadeSlideUp 0.6s ease 0.1s both; }
+    .fade-slide-up-2 { animation: fadeSlideUp 0.6s ease 0.2s both; }
+    .fade-slide-up-3 { animation: fadeSlideUp 0.6s ease 0.35s both; }
+    .fade-slide-up-4 { animation: fadeSlideUp 0.6s ease 0.5s both; }
+
+    #coin.flipping { animation: coinSpin 1.4s ease-in-out forwards; }
+    .reveal-card.match { animation: matchPulse 0.5s ease; }
+    .handoff-icon { animation: handoffBounce 1.8s ease-in-out infinite; }
+
+    .confetti-piece {
+      position: fixed; top: -20px;
+      animation: confettiFall linear forwards;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Option buttons */
+    .option-btn {
+      display: flex; align-items: center; gap: 14px;
+      background: white; border: 1.5px solid #E2D9CE;
+      border-radius: 14px; padding: 14px 18px;
+      text-align: left; font-size: 0.92rem; color: #1A1A1A;
+      line-height: 1.4; cursor: pointer; width: 100%;
+      transition: all 0.18s ease;
+      font-family: 'DM Sans', system-ui, sans-serif;
+    }
+    .option-btn:hover:not(:disabled) {
+      border-color: #1E3A2F; background: #F2EBE0;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(30,58,47,0.1);
+    }
+    .option-btn.selected {
+      border-color: #1E3A2F; background: #1E3A2F; color: white;
+    }
+    .option-btn.selected .option-letter {
+      background: rgba(255,255,255,0.2); color: white;
+    }
+    .option-btn:disabled { cursor: default; }
+
+    /* Progress bar */
+    .progress-fill { transition: width 0.35s ease; }
+
+    /* Reveal cards */
+    .reveal-card {
+      border: 2px solid #E2D9CE; border-radius: 14px;
+      padding: 16px 14px; background: white; min-height: 90px;
+      transition: border-color 0.35s, background 0.35s;
+    }
+    .reveal-card.match { border-color: #2D6E4E; background: #EBF5EF; }
+    .reveal-card.miss { border-color: #D4A5A0; background: #F9EEEC; }
+
+    /* Scrollbar hide */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Glass card */
+    .glass-card {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* Hero gradient */
+    .hero-gradient {
+      background: linear-gradient(135deg, #1E3A2F 0%, #2C4A3E 40%, #3D2A2A 100%);
+    }
+
+    /* Mode card */
+    .mode-card {
+      border: 2px solid #E2D9CE; border-radius: 14px;
+      padding: 16px; cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+    .mode-card.selected { border-color: #1E3A2F; background: #F0F4F2; }
+    .mode-card:hover:not(.selected) { border-color: #3D5E50; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .float-1, .float-2, .float-3, .float-4, .float-5,
+      .fade-slide-up, .fade-slide-up-1, .fade-slide-up-2,
+      .fade-slide-up-3, .fade-slide-up-4 { animation: none; opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body class="bg-cream font-sans">
+
+<div id="confetti-container" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- LANDING PAGE                                    -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-landing" class="screen active" style="display:block; min-height:100vh;">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-cream/90 backdrop-blur border-b border-[#E2D9CE]">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full bg-deep flex items-center justify-center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z" fill="white"/>
+        </svg>
+      </div>
+      <span class="font-serif text-xl font-medium text-deep tracking-wide">Closer</span>
+    </div>
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#how" class="text-sm text-[#5A5A5A] hover:text-deep transition-colors">How it Works</a>
+      <a href="#features" class="text-sm text-[#5A5A5A] hover:text-deep transition-colors">For Couples</a>
+    </div>
+    <button onclick="initSetup()" class="bg-deep text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-deep-mid transition-all hover:-translate-y-0.5 cursor-pointer">
+      Play Now
+    </button>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero-gradient min-h-screen relative overflow-hidden pt-20">
+
+    <!-- Floating decorative shapes -->
+    <div class="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
+      <div class="float-1 absolute top-[15%] left-[8%] text-white/20 text-5xl">♡</div>
+      <div class="float-2 absolute top-[25%] right-[10%] text-white/15 text-6xl">♡</div>
+      <div class="float-3 absolute top-[55%] left-[5%] text-white/10 text-4xl">◇</div>
+      <div class="float-4 absolute top-[70%] right-[8%] text-white/15 text-3xl">♡</div>
+      <div class="float-5 absolute top-[40%] left-[45%] text-white/10 text-2xl">◇</div>
+      <div class="float-1 absolute top-[10%] right-[30%] text-white/10 text-3xl">✦</div>
+      <div class="float-3 absolute bottom-[15%] left-[35%] text-white/10 text-2xl">♡</div>
+    </div>
+
+    <!-- Hero content -->
+    <div class="relative z-10 max-w-6xl mx-auto px-6 pt-16 pb-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+      <!-- Left: copy -->
+      <div>
+        <div class="fade-slide-up-1 inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-semibold tracking-widest uppercase px-4 py-2 rounded-full border border-white/20 mb-8">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose inline-block"></span>
+          The Couples Connection Game
+        </div>
+        <h1 class="fade-slide-up-2 font-serif text-5xl md:text-6xl lg:text-[4.5rem] font-medium leading-[1.1] text-white mb-6">
+          How well do you really<br>
+          <em class="text-gold">know each other?</em>
+        </h1>
+        <p class="fade-slide-up-3 text-lg text-white/60 leading-relaxed mb-10 max-w-md">
+          A weekly game for couples. Answer questions about yourself. Your partner guesses what you chose. See who knows who — one reveal at a time.
+        </p>
+        <div class="fade-slide-up-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <button onclick="initSetup()" class="group bg-rose text-white font-semibold text-base px-8 py-4 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer flex items-center gap-3">
+            Start Playing Free
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+          <a href="#how" class="text-white/60 hover:text-white text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+            </svg>
+            How it works
+          </a>
+        </div>
+        <p class="fade-slide-up-4 text-white/30 text-xs mt-5">No account needed · One device · 15–20 minutes</p>
+      </div>
+
+      <!-- Right: browser mockup -->
+      <div class="fade-slide-up-3 relative">
+        <div class="relative rounded-2xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.4)] border border-white/10">
+          <!-- Browser chrome -->
+          <div class="bg-[#2A1F1F]/80 backdrop-blur px-4 py-3 flex items-center gap-3 border-b border-white/10">
+            <div class="flex gap-1.5">
+              <div class="w-3 h-3 rounded-full bg-[#FF5F57]"></div>
+              <div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+              <div class="w-3 h-3 rounded-full bg-[#28C840]"></div>
+            </div>
+            <div class="flex-1 bg-white/10 rounded-md px-3 py-1 text-xs text-white/40 text-center">closer.game</div>
+            <div class="w-12"></div>
+          </div>
+          <!-- Mock game UI -->
+          <div class="bg-[#FAF7F2] p-5">
+            <!-- Mock header -->
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#E2D9CE]">
+              <span class="font-serif text-[#1E3A2F] font-semibold text-base">Closer</span>
+              <div class="flex gap-5 text-center">
+                <div>
+                  <div class="text-[10px] text-[#9A9A9A] uppercase tracking-wider">Alex</div>
+                  <div class="font-serif text-[#BF9447] font-bold text-lg leading-tight">200</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-[#9A9A9A] uppercase tracking-wider">Jamie</div>
+                  <div class="font-serif text-[#1E3A2F] font-bold text-lg leading-tight">100</div>
+                </div>
+              </div>
+            </div>
+            <!-- Category tag -->
+            <span class="inline-block bg-[#EECEC9] text-[#9E5047] text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full mb-3">Daily Life</span>
+            <!-- Question -->
+            <p class="font-serif text-[#1A1A1A] text-base font-medium leading-snug mb-4">"When you get home after a long day, your first move is usually:"</p>
+            <!-- Answer cards -->
+            <div class="grid grid-cols-2 gap-2.5 mb-3">
+              <div class="rounded-xl p-3 border-2 border-[#2D6E4E] bg-[#EBF5EF]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-[#2D6E4E] mb-1.5">Alex's Answer</div>
+                <div class="text-xs font-medium text-[#1A1A1A] leading-snug">Change into comfortable clothes immediately</div>
+              </div>
+              <div class="rounded-xl p-3 border-2 border-[#2D6E4E] bg-[#EBF5EF]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-[#2D6E4E] mb-1.5">Jamie's Guess</div>
+                <div class="text-xs font-medium text-[#1A1A1A] leading-snug">Change into comfortable clothes immediately</div>
+              </div>
+            </div>
+            <div class="bg-[#EBF5EF] border border-[#2D6E4E] rounded-xl p-3 text-center">
+              <span class="text-[#2D6E4E] text-xs font-bold">✓ Perfect Match — +100 pts</span>
+            </div>
+          </div>
+        </div>
+        <!-- Floating badge -->
+        <div class="absolute -top-3 -right-3 bg-gold text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-gold/40">
+          15–20 min
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom wave -->
+    <div class="absolute bottom-0 left-0 right-0">
+      <svg viewBox="0 0 1440 80" fill="none" preserveAspectRatio="none" class="w-full h-16">
+        <path d="M0 80L1440 80L1440 40C1200 80 960 0 720 40C480 80 240 0 0 40L0 80Z" fill="#FAF7F2"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="bg-cream py-24 px-6">
+    <div class="max-w-5xl mx-auto text-center">
+      <p class="text-rose text-xs font-bold uppercase tracking-[0.15em] mb-4">Simple to learn, surprising every time</p>
+      <h2 class="font-serif text-4xl md:text-5xl font-medium text-deep mb-4">How it works</h2>
+      <p class="text-[#5A5A5A] mb-16 max-w-lg mx-auto">Two rounds. Ten questions. Real answers from your real partner.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+        <!-- Connector line (desktop) -->
+        <div class="hidden md:block absolute top-12 left-[22%] right-[22%] h-px bg-gradient-to-r from-[#E2D9CE] via-rose/30 to-[#E2D9CE]"></div>
+
+        <div class="bg-white rounded-2xl p-8 shadow-[0_4px_24px_rgba(30,20,10,0.07)] border border-[#E2D9CE] relative">
+          <div class="w-12 h-12 rounded-full bg-deep flex items-center justify-center mx-auto mb-5">
+            <span class="font-serif text-gold font-bold text-lg">1</span>
+          </div>
+          <h3 class="font-semibold text-deep mb-3">Set up in 60 seconds</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Enter both names, pick Competitive or Cooperative. The game randomly picks who's in the hot seat first.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-8 shadow-[0_4px_24px_rgba(30,20,10,0.07)] border border-[#E2D9CE] relative">
+          <div class="w-12 h-12 rounded-full bg-rose flex items-center justify-center mx-auto mb-5">
+            <span class="font-serif text-white font-bold text-lg">2</span>
+          </div>
+          <h3 class="font-semibold text-deep mb-3">Answer about yourself</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">One partner answers 5 questions honestly. Their answers lock — completely hidden from the other.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-8 shadow-[0_4px_24px_rgba(30,20,10,0.07)] border border-[#E2D9CE] relative">
+          <div class="w-12 h-12 rounded-full bg-gold flex items-center justify-center mx-auto mb-5">
+            <span class="font-serif text-white font-bold text-lg">3</span>
+          </div>
+          <h3 class="font-semibold text-deep mb-3">Reveal together</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Both answers show side by side. Matches earn points. Misses spark conversations. Round 2 flips everything.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="bg-[#F2EBE0] py-24 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-16">
+        <p class="text-rose text-xs font-bold uppercase tracking-[0.15em] mb-4">Built for real couples</p>
+        <h2 class="font-serif text-4xl md:text-5xl font-medium text-deep">Not your average quiz app</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
+          <div class="w-10 h-10 rounded-xl bg-deep/10 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-deep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <h3 class="font-semibold text-deep mb-2">15–20 minutes</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Designed to fit your week. After dinner, on the couch, before bed. Short enough to actually do it.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
+          <div class="w-10 h-10 rounded-xl bg-rose/10 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-rose" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3 class="font-semibold text-deep mb-2">Your real answers</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">You set the correct answer by answering for yourself. It's personalized to your relationship, not generic quiz logic.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
+          <div class="w-10 h-10 rounded-xl bg-gold/20 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-gold-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <h3 class="font-semibold text-deep mb-2">Balanced for both</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Neither partner has a built-in advantage. Each round you switch roles — subject and guesser swap every time.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
+          <div class="w-10 h-10 rounded-xl bg-deep/10 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-deep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+          </div>
+          <h3 class="font-semibold text-deep mb-2">5 categories, 45+ questions</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Daily Life, Early Days, Big Dreams, Family, and Just for Fun. New questions every session — randomly drawn.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
+          <div class="w-10 h-10 rounded-xl bg-rose/10 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-rose" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <h3 class="font-semibold text-deep mb-2">Two modes</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Choose Competitive (someone wins) or Cooperative (shared connection score). Pick fresh every session based on the mood.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
+          <div class="w-10 h-10 rounded-xl bg-gold/20 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-gold-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+          </div>
+          <h3 class="font-semibold text-deep mb-2">One device, no downloads</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Pass the phone between turns. No app store, no account, no setup. Open the browser and play.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="hero-gradient py-28 px-6 text-center relative overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+      <div class="float-2 absolute top-[20%] left-[10%] text-white/10 text-5xl">♡</div>
+      <div class="float-3 absolute bottom-[20%] right-[10%] text-white/10 text-4xl">♡</div>
+    </div>
+    <div class="relative z-10 max-w-xl mx-auto">
+      <h2 class="font-serif text-4xl md:text-5xl font-medium text-white mb-5">
+        Ready to see who knows who?
+      </h2>
+      <p class="text-white/50 mb-10 text-base">No account needed. Takes 60 seconds to start.</p>
+      <button onclick="initSetup()" class="group bg-rose text-white font-semibold text-lg px-10 py-5 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/40 cursor-pointer inline-flex items-center gap-3">
+        Start Playing Free
+        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <footer class="bg-cream border-t border-[#E2D9CE] py-8 text-center text-xs text-[#9A9A9A]">
+    © 2025 Closer — Made for couples, by someone in one.
+  </footer>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SETUP                                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-setup" class="screen">
+  <div class="min-h-screen bg-cream flex flex-col items-center justify-center px-5 py-12">
+    <div class="flex items-center gap-2 mb-10">
+      <div class="w-8 h-8 rounded-full bg-deep flex items-center justify-center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+      </div>
+      <span class="font-serif text-xl font-medium text-deep">Closer</span>
+    </div>
+
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,20,10,0.1)] border border-[#E2D9CE] p-8">
+      <h2 class="font-serif text-3xl font-medium text-deep mb-1">Set up your game</h2>
+      <p class="text-sm text-[#9A9A9A] mb-8">Both partners should be ready. Takes 60 seconds.</p>
+
+      <div class="space-y-5 mb-6">
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-2" for="input-p1">Partner 1 — your name</label>
+          <input id="input-p1" type="text" placeholder="e.g. Alex" maxlength="20" autocomplete="off"
+            class="w-full px-4 py-3 bg-cream border-[1.5px] border-[#E2D9CE] rounded-xl text-sm text-deep outline-none transition-colors focus:border-deep focus:bg-white placeholder-[#C0B8AF]">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-2" for="input-p2">Partner 2 — their name</label>
+          <input id="input-p2" type="text" placeholder="e.g. Jamie" maxlength="20" autocomplete="off"
+            class="w-full px-4 py-3 bg-cream border-[1.5px] border-[#E2D9CE] rounded-xl text-sm text-deep outline-none transition-colors focus:border-deep focus:bg-white placeholder-[#C0B8AF]">
+        </div>
+      </div>
+
+      <div class="h-px bg-[#E2D9CE] my-6"></div>
+
+      <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-3">Game Mode</p>
+      <div class="grid grid-cols-2 gap-3 mb-8">
+        <div class="mode-card selected" id="mode-competitive" onclick="selectMode('competitive')">
+          <input type="radio" name="mode" value="competitive" checked class="sr-only">
+          <div class="mb-2">
+            <svg class="w-5 h-5 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <div class="font-semibold text-deep text-sm mb-1">Competitive</div>
+          <div class="text-xs text-[#5A5A5A] leading-snug">Someone wins. Earn points for correct guesses.</div>
+        </div>
+        <div class="mode-card" id="mode-cooperative" onclick="selectMode('cooperative')">
+          <input type="radio" name="mode" value="cooperative" class="sr-only">
+          <div class="mb-2">
+            <svg class="w-5 h-5 text-rose" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="font-semibold text-deep text-sm mb-1">Cooperative</div>
+          <div class="text-xs text-[#5A5A5A] leading-snug">Play as a team. Earn a shared connection score.</div>
+        </div>
+      </div>
+
+      <button onclick="startGame()" class="w-full bg-deep text-white font-semibold py-4 rounded-xl hover:bg-deep-mid transition-all hover:-translate-y-0.5 cursor-pointer text-base">
+        Start Game →
+      </button>
+    </div>
+
+    <button onclick="showScreen('screen-landing')" class="mt-6 text-sm text-[#9A9A9A] hover:text-deep transition-colors cursor-pointer">
+      ← Back to home
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- COIN FLIP                                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-coinflip" class="screen">
+  <div class="min-h-screen hero-gradient flex flex-col items-center justify-center px-5 text-center">
+    <div class="text-white/30 font-serif text-xl mb-16">♡ Closer</div>
+
+    <div id="coin" class="w-20 h-20 rounded-full bg-gold shadow-[0_8px_32px_rgba(191,148,71,0.5)] flex items-center justify-center text-white text-4xl mb-10">
+      ♡
+    </div>
+
+    <p class="text-white/50 text-base mb-3">Round 1 is about…</p>
+
+    <div id="coinflip-reveal" style="opacity:0; transition:opacity 0.6s ease;">
+      <div class="font-serif text-5xl md:text-6xl font-medium text-white mb-3" id="coinflip-subject">—</div>
+      <p class="text-white/40 text-sm mb-12 max-w-xs">They'll answer first. Their answers lock before their partner sees them.</p>
+      <button id="coinflip-btn" onclick="showRoundIntro()" style="display:none"
+        class="bg-rose text-white font-semibold px-10 py-4 rounded-full hover:bg-rose-dark transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer text-base">
+        Let's go →
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- ROUND INTRO                                     -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-round-intro" class="screen">
+  <div class="min-h-screen bg-cream flex flex-col items-center justify-center px-5 text-center">
+    <span id="round-intro-num" class="inline-block bg-rose/15 text-rose text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6">Round 1 of 2</span>
+    <h2 id="round-intro-headline" class="font-serif text-4xl md:text-5xl font-medium text-deep mb-5 max-w-sm">Round 1 is about Alex</h2>
+    <p id="round-intro-desc" class="text-[#5A5A5A] text-base leading-relaxed max-w-md mb-10">
+      Alex answers 5 questions about themselves. Their answers lock and stay hidden. Then Jamie guesses what Alex chose.
+    </p>
+    <div class="bg-white border border-[#E2D9CE] rounded-2xl p-6 max-w-sm mb-10 text-left space-y-3">
+      <div class="flex items-start gap-3 text-sm text-[#5A5A5A]">
+        <div class="w-1.5 h-1.5 rounded-full bg-rose flex-shrink-0 mt-[6px]"></div>
+        The subject answers honestly — no changing after locking
+      </div>
+      <div class="flex items-start gap-3 text-sm text-[#5A5A5A]">
+        <div class="w-1.5 h-1.5 rounded-full bg-rose flex-shrink-0 mt-[6px]"></div>
+        The guesser can't see locked answers until the reveal
+      </div>
+      <div class="flex items-start gap-3 text-sm text-[#5A5A5A]">
+        <div class="w-1.5 h-1.5 rounded-full bg-rose flex-shrink-0 mt-[6px]"></div>
+        Both answers reveal together after all 5 questions
+      </div>
+    </div>
+    <button id="round-intro-btn" onclick="showSubjectQuestion()"
+      class="bg-deep text-white font-semibold px-10 py-4 rounded-full hover:bg-deep-mid transition-all hover:-translate-y-1 cursor-pointer text-base">
+      Begin →
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SUBJECT ANSWERING                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-subject" class="screen bg-cream">
+  <div class="max-w-xl mx-auto px-5">
+    <!-- Header -->
+    <div class="pt-6 pb-4">
+      <div class="flex justify-between items-center mb-2">
+        <span id="subject-label" class="text-xs font-bold uppercase tracking-[0.08em] text-[#9A9A9A]">Your turn to answer</span>
+        <span id="subject-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 5</span>
+      </div>
+      <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
+        <div id="subject-progress-bar" class="h-full bg-deep rounded-full progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Question card -->
+    <div class="bg-white rounded-2xl shadow-[0_4px_24px_rgba(30,20,10,0.08)] border border-[#E2D9CE] p-7 mb-3">
+      <span id="subject-category-tag" class="inline-block bg-rose/15 text-rose text-[11px] font-bold uppercase tracking-[0.08em] px-3 py-1 rounded-full mb-4">Daily Life</span>
+      <p id="subject-q-text" class="font-serif text-2xl font-medium text-deep leading-snug">Question text loads here</p>
+    </div>
+
+    <!-- Options -->
+    <div id="subject-options" class="space-y-2.5 pb-10"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- HANDOFF                                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-handoff" class="screen">
+  <div class="min-h-screen hero-gradient flex flex-col items-center justify-center px-5 text-center">
+    <div class="handoff-icon text-5xl mb-8">📱</div>
+    <p id="handoff-locked" class="font-serif text-3xl font-medium text-white mb-3">Alex's answers are locked.</p>
+    <p id="handoff-pass" class="text-white/50 text-base mb-14">Pass the device to Jamie.</p>
+    <button id="handoff-btn" onclick="showGuesserQuestion()"
+      class="bg-rose text-white font-semibold px-10 py-4 rounded-full hover:bg-rose-dark transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer text-base">
+      I'm ready →
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- GUESSER ANSWERING                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-guesser" class="screen bg-cream">
+  <div class="max-w-xl mx-auto px-5">
+    <div class="pt-6 pb-4">
+      <div class="flex justify-between items-center mb-2">
+        <span id="guesser-label" class="text-xs font-bold uppercase tracking-[0.08em] text-[#9A9A9A]">What would they choose?</span>
+        <span id="guesser-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 5</span>
+      </div>
+      <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
+        <div id="guesser-progress-bar" class="h-full bg-rose rounded-full progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-[0_4px_24px_rgba(30,20,10,0.08)] border border-[#E2D9CE] p-7 mb-3">
+      <span id="guesser-category-tag" class="inline-block bg-rose/15 text-rose text-[11px] font-bold uppercase tracking-[0.08em] px-3 py-1 rounded-full mb-4">Daily Life</span>
+      <p class="text-xs text-[#9A9A9A] italic mb-3">You're predicting what your partner chose.</p>
+      <p id="guesser-q-text" class="font-serif text-2xl font-medium text-deep leading-snug">Question text loads here</p>
+    </div>
+
+    <div id="guesser-options" class="space-y-2.5 pb-10"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- REVEAL                                          -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-reveal" class="screen bg-cream">
+  <!-- Sticky score header -->
+  <div class="bg-deep text-white px-5 py-3.5 flex items-center justify-between sticky top-0 z-10">
+    <span class="font-serif text-lg font-medium">Closer</span>
+    <div class="flex gap-6">
+      <div class="text-center">
+        <div class="text-[10px] text-white/40 uppercase tracking-wider" id="reveal-p1-name">P1</div>
+        <div class="font-serif text-gold text-xl font-bold leading-tight" id="reveal-p1-score">0</div>
+      </div>
+      <div class="text-center">
+        <div class="text-[10px] text-white/40 uppercase tracking-wider" id="reveal-p2-name">P2</div>
+        <div class="font-serif text-gold text-xl font-bold leading-tight" id="reveal-p2-score">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-xl mx-auto px-5 pt-5 pb-10">
+    <div class="flex items-center justify-between mb-4">
+      <span id="reveal-category-tag" class="inline-block bg-rose/15 text-rose text-[11px] font-bold uppercase tracking-[0.08em] px-3 py-1 rounded-full">Category</span>
+      <span class="text-xs font-semibold text-[#9A9A9A]" id="reveal-progress">1 of 5</span>
+    </div>
+
+    <p id="reveal-q-text" class="font-serif text-xl font-medium text-deep leading-snug mb-5 pb-5 border-b border-[#E2D9CE]">Question text</p>
+
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div class="reveal-card" id="reveal-card-subject">
+        <div class="text-[10px] font-bold uppercase tracking-[0.07em] text-[#9A9A9A] mb-2.5" id="reveal-subject-name">Alex's answer</div>
+        <div class="text-sm font-medium text-deep leading-snug min-h-[40px]" id="reveal-subject-answer">—</div>
+      </div>
+      <div class="reveal-card" id="reveal-card-guesser">
+        <div class="text-[10px] font-bold uppercase tracking-[0.07em] text-[#9A9A9A] mb-2.5" id="reveal-guesser-name">Jamie's guess</div>
+        <div class="text-sm font-medium text-deep leading-snug min-h-[40px]" id="reveal-guesser-answer">—</div>
+      </div>
+    </div>
+
+    <div id="reveal-result-banner" class="hidden rounded-xl p-3.5 flex items-center gap-3 mb-4 text-sm font-bold">
+      <span class="result-icon"></span>
+      <span class="result-text flex-1"></span>
+      <span class="result-pts font-serif text-lg"></span>
+    </div>
+
+    <button id="reveal-next-btn" onclick="nextReveal()" style="display:none"
+      class="w-full bg-deep text-white font-semibold py-4 rounded-xl hover:bg-deep-mid transition-all cursor-pointer text-base">
+      Next Question →
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- ROUND SUMMARY                                   -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-round-summary" class="screen bg-cream">
+  <div class="min-h-screen flex flex-col items-center justify-center px-5 text-center py-12">
+    <h2 id="summary-heading" class="font-serif text-4xl font-medium text-deep mb-2">Round 1 Complete</h2>
+    <p id="summary-match-stat" class="text-[#5A5A5A] text-base mb-8">3 of 5 matched</p>
+
+    <!-- Dot indicators -->
+    <div id="summary-dots" class="flex gap-3 justify-center mb-3"></div>
+    <p id="summary-guesser" class="text-sm text-[#9A9A9A] italic mb-10">Jamie got 3 right</p>
+
+    <!-- Score card -->
+    <div class="bg-white rounded-2xl shadow-[0_4px_24px_rgba(30,20,10,0.08)] border border-[#E2D9CE] px-10 py-7 flex gap-12 mb-10">
+      <div class="text-center">
+        <div class="text-[11px] font-bold uppercase tracking-[0.07em] text-[#9A9A9A] mb-1" id="summary-p1-label">Partner 1</div>
+        <div class="font-serif text-4xl font-bold text-deep" id="summary-p1-pts">0</div>
+      </div>
+      <div class="w-px bg-[#E2D9CE]"></div>
+      <div class="text-center">
+        <div class="text-[11px] font-bold uppercase tracking-[0.07em] text-[#9A9A9A] mb-1" id="summary-p2-label">Partner 2</div>
+        <div class="font-serif text-4xl font-bold text-deep" id="summary-p2-pts">0</div>
+      </div>
+    </div>
+
+    <button id="summary-next-btn" class="bg-deep text-white font-semibold px-12 py-4 rounded-full hover:bg-deep-mid transition-all hover:-translate-y-1 cursor-pointer text-base">
+      Start Round 2
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- END SCREEN                                      -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-end" class="screen">
+  <div class="min-h-screen hero-gradient flex flex-col items-center justify-center px-5 text-center py-12">
+    <div class="text-white/30 font-serif text-xl mb-10">♡ Closer</div>
+
+    <!-- Compat ring -->
+    <div class="w-36 h-36 rounded-full border-2 border-white/15 bg-white/5 flex flex-col items-center justify-center mb-5">
+      <div class="font-serif text-gold text-4xl font-bold leading-none" id="end-compat-pct">70%</div>
+      <div class="text-white/30 text-[10px] uppercase tracking-[0.1em] mt-1">match rate</div>
+    </div>
+
+    <p class="text-white/40 text-sm mb-2" id="end-compat-label">Strong connection — a few surprises.</p>
+    <h2 class="font-serif text-3xl font-medium text-white mb-10" id="end-winner">Alex wins this round.</h2>
+
+    <!-- Scores -->
+    <div class="flex gap-10 bg-white/8 border border-white/10 rounded-2xl px-10 py-6 mb-8">
+      <div class="text-center">
+        <div class="text-[10px] uppercase tracking-[0.08em] text-white/30 mb-1" id="end-p1-label">P1</div>
+        <div class="font-serif text-white text-3xl font-bold" id="end-p1-pts">0</div>
+      </div>
+      <div class="w-px bg-white/10"></div>
+      <div class="text-center">
+        <div class="text-[10px] uppercase tracking-[0.08em] text-white/30 mb-1" id="end-p2-label">P2</div>
+        <div class="font-serif text-white text-3xl font-bold" id="end-p2-pts">0</div>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="flex gap-10 mb-12">
+      <div class="text-center">
+        <div class="font-serif text-gold text-3xl font-medium" id="end-matches">7</div>
+        <div class="text-white/30 text-[10px] uppercase tracking-[0.07em] mt-1">Questions Matched</div>
+      </div>
+      <div class="text-center">
+        <div class="font-serif text-gold text-3xl font-medium" id="end-streak">3</div>
+        <div class="text-white/30 text-[10px] uppercase tracking-[0.07em] mt-1">Best Streak</div>
+      </div>
+    </div>
+
+    <div class="flex gap-4 flex-wrap justify-center">
+      <button onclick="playAgain()" class="bg-white text-deep font-bold px-8 py-3.5 rounded-full hover:opacity-90 transition-all cursor-pointer">
+        Play Again
+      </button>
+      <button onclick="showScreen('screen-landing')" class="border border-white/25 text-white font-medium px-8 py-3.5 rounded-full hover:bg-white/10 transition-all cursor-pointer">
+        Home
+      </button>
+    </div>
+  </div>
+</section>
+
+<script src="questions.js"></script>
+<script src="app.js"></script>
+<script>
+  function initSetup() {
+    showScreen('screen-setup');
+    setTimeout(() => {
+      const el = document.getElementById('input-p1');
+      if (el) el.focus();
+    }, 50);
+  }
+
+  // Reveal banner helper (called from app.js via DOM manipulation)
+  function setRevealBanner(matched, pts, isStreak) {
+    const banner = document.getElementById('reveal-result-banner');
+    banner.className = 'rounded-xl p-3.5 flex items-center gap-3 mb-4 text-sm font-bold';
+    if (matched) {
+      banner.classList.add('bg-[#EBF5EF]', 'border', 'border-[#2D6E4E]', 'text-[#2D6E4E]');
+      banner.querySelector('.result-icon').textContent = '✓';
+      banner.querySelector('.result-text').textContent = isStreak ? 'Perfect Match · Streak Bonus!' : 'Perfect Match!';
+      banner.querySelector('.result-pts').textContent = `+${pts} pts`;
+    } else {
+      banner.classList.add('bg-[#F9EEEC]', 'border', 'border-[#D4A5A0]', 'text-[#8B4A3A]');
+      banner.querySelector('.result-icon').textContent = '◌';
+      banner.querySelector('.result-text').textContent = 'Different this time';
+      banner.querySelector('.result-pts').textContent = '0 pts';
+    }
+    banner.style.display = 'flex';
+  }
+</script>
+</body>
+</html>
