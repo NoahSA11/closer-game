@@ -2,7 +2,7 @@
 
 A free, browser-based quiz game for couples. Answer questions about yourself, your partner guesses what you chose, and both answers reveal side by side. See who really knows who.
 
-**[Play it live →](https://closer-game.netlify.app)**
+**[Play it live →](https://closergame.netlify.app)**
 
 ---
 
