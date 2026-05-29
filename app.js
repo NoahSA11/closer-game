@@ -1,6 +1,7 @@
 const state = {
   p1Name: 'Partner 1',
   p2Name: 'Partner 2',
+  gameType: 'couples',   // 'couples' | 'friends'
   mode: 'competitive',
   round: 1,
   totalRounds: 4,
@@ -18,6 +19,38 @@ const state = {
   spicyEnabled: false,
   speedTimer: null,
   speedTimeLeft: 15
+};
+
+// ─── Mode copy config ────────────────────────────────────────
+// All gameType-variant strings live here. Call sites use COPY[state.gameType].
+
+const COPY = {
+  couples: {
+    defaultP1: 'Partner 1',
+    defaultP2: 'Partner 2',
+    handoffMindRead: (g, s) => `${g}, can you read ${s}'s mind?`,
+    guesserLabel:    (g, s) => `${g}: what would ${s} choose?`,
+    cooperativeWin:  (pct)  => pct >= 70
+      ? 'Strong session. You know each other well.'
+      : 'Good session, some surprises in there.',
+    shareText: (p1, p2, match, total, pct) =>
+      `${p1} & ${p2} just played Closer: ${match}/${total} matches, ${pct}% compatibility. Can you beat us? closergame.netlify.app`,
+    roundPerfect: (g, s) => `Perfect round. ${g} knows ${s} cold.`,
+    roundSolid:   (g)    => `Solid. ${g} got most of them.`,
+  },
+  friends: {
+    defaultP1: 'Friend 1',
+    defaultP2: 'Friend 2',
+    handoffMindRead: (g, s) => `${g}, what do you think ${s} would say?`,
+    guesserLabel:    (g, s) => `${g}: predict what ${s} chose`,
+    cooperativeWin:  (pct)  => pct >= 70
+      ? 'Solid session. You really know each other.'
+      : 'Good effort. More to discover.',
+    shareText: (p1, p2, match, total, pct) =>
+      `${p1} & ${p2} just played Closer with friends: ${match}/${total} matches, ${pct}% in sync. closergame.netlify.app`,
+    roundPerfect: (g, s) => `Perfect round. ${g} knows ${s} well.`,
+    roundSolid:   (g)    => `Solid. ${g} had ${s} figured out.`,
+  }
 };
 
 // ─── Utilities ───────────────────────────────────────────────
@@ -64,17 +97,21 @@ function isSpeedRound() {
 // ─── Question Selection ───────────────────────────────────────
 
 function selectQuestions() {
-  // Build active category list (spicy opt-in)
-  const cats = Object.keys(QUESTION_BANK).filter(k => k !== 'spicy');
-  if (state.spicyEnabled && QUESTION_BANK.spicy) cats.push('spicy');
+  // Pick bank based on game type
+  const bank = state.gameType === 'friends' ? FRIEND_QUESTION_BANK : QUESTION_BANK;
+  const spicyKey = state.gameType === 'friends' ? 'challenge' : 'spicy';
+
+  // Build active category list (adult category opt-in regardless of game type)
+  const cats = Object.keys(bank).filter(k => k !== spicyKey);
+  if (state.spicyEnabled && bank[spicyKey]) cats.push(spicyKey);
   state.questionsPerRound = cats.length;
 
   // Shuffle each category independently
   const byCat = {};
   cats.forEach(cat => {
     byCat[cat] = shuffle(
-      QUESTION_BANK[cat].questions.map(q => ({
-        ...q, category: cat, categoryLabel: QUESTION_BANK[cat].label
+      bank[cat].questions.map(q => ({
+        ...q, category: cat, categoryLabel: bank[cat].label
       }))
     );
   });
@@ -141,6 +178,34 @@ function updateTimerDisplay(ringId, numId, seconds) {
 
 // ─── Setup UI helpers ────────────────────────────────────────
 
+function selectGameType(type) {
+  state.gameType = type;
+  // Update toggle card visual state
+  document.querySelectorAll('.game-type-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById(`type-${type}`);
+  if (card) card.classList.add('selected');
+  document.querySelectorAll('input[name="game-type"]').forEach(r => {
+    r.checked = r.value === type;
+  });
+  // Swap placeholder text and labels on name fields
+  const c = COPY[type];
+  const p1Input = document.getElementById('input-p1');
+  const p2Input = document.getElementById('input-p2');
+  const p1Label = document.getElementById('label-p1');
+  const p2Label = document.getElementById('label-p2');
+  if (p1Input) p1Input.placeholder = `e.g. ${type === 'friends' ? 'Alex' : 'Alex'}`;
+  if (p2Input) p2Input.placeholder = `e.g. ${type === 'friends' ? 'Jamie' : 'Jamie'}`;
+  if (p1Label) p1Label.textContent = type === 'friends' ? 'Friend 1: your name' : 'Partner 1: your name';
+  if (p2Label) p2Label.textContent = type === 'friends' ? 'Friend 2: their name' : 'Partner 2: their name';
+  // Update spicy toggle label for friend mode
+  const spicyLabel = document.getElementById('spicy-toggle-label');
+  const spicyHelper = document.getElementById('spicy-toggle-helper');
+  if (spicyLabel) spicyLabel.textContent = type === 'friends' ? '🌶️ Friend Challenge' : '🌶️ Spicy Questions';
+  if (spicyHelper) spicyHelper.textContent = type === 'friends'
+    ? 'Adds embarrassing confessions and unpopular opinions. Best for close friends.'
+    : 'Intimate questions about your relationship: tasteful but personal. Best with a partner you\'re comfortable with.';
+}
+
 function selectRounds(n) {
   document.querySelectorAll('.rounds-btn').forEach(b => b.classList.remove('selected'));
   const btn = document.querySelector(`.rounds-btn[data-rounds="${n}"]`);
@@ -161,10 +226,15 @@ function toggleOption(id) {
 // ─── Setup ────────────────────────────────────────────────────
 
 function startGame() {
+  // Read game type from setup toggle
+  const typeEl = document.querySelector('input[name="game-type"]:checked');
+  state.gameType = typeEl ? typeEl.value : 'couples';
+
+  const c = COPY[state.gameType];
   const p1Input = document.getElementById('input-p1').value.trim();
   const p2Input = document.getElementById('input-p2').value.trim();
-  state.p1Name = p1Input || 'Partner 1';
-  state.p2Name = p2Input || 'Partner 2';
+  state.p1Name = p1Input || c.defaultP1;
+  state.p2Name = p2Input || c.defaultP2;
 
   // P2: Persist names so Play Again pre-fills them
   localStorage.setItem('closer-p1', state.p1Name);
@@ -360,7 +430,7 @@ function showHandoff() {
   const guesser = getGuesserName();
   document.getElementById('handoff-locked').textContent = `${subject}'s answers are locked.`;
   // Fix 14: anticipation copy instead of plain logistical instruction
-  document.getElementById('handoff-pass').textContent = `${guesser}, can you read ${subject}'s mind?`;
+  document.getElementById('handoff-pass').textContent = COPY[state.gameType].handoffMindRead(guesser, subject);
   document.getElementById('handoff-btn').textContent = `I'm ${guesser}. I'm ready`;
   state.currentQIndex = 0;
 }
@@ -374,7 +444,7 @@ function showGuesserQuestion() {
   const subject = getSubjectName();
   const guesser = getGuesserName();
 
-  document.getElementById('guesser-label').textContent = `${guesser}: what would ${subject} choose?`;
+  document.getElementById('guesser-label').textContent = COPY[state.gameType].guesserLabel(guesser, subject);
   document.getElementById('guesser-progress-text').textContent = `${state.currentQIndex + 1} of ${state.questionsPerRound}`;
   document.getElementById('guesser-category-tag').textContent = q.categoryLabel;
   document.getElementById('guesser-q-text').textContent = q.text;
@@ -526,9 +596,10 @@ function showRoundSummary() {
   // Fix 19: conditional copy based on actual match rate
   const ratio = matchCount / state.questionsPerRound;
   let roundVerdict;
-  if (ratio === 1)        roundVerdict = `Perfect round. ${guesser} knows ${getSubjectName()} cold.`;
+  const c = COPY[state.gameType];
+  if (ratio === 1)        roundVerdict = c.roundPerfect(guesser, getSubjectName());
   else if (ratio >= 0.8)  roundVerdict = `Strong round. One surprise in there.`;
-  else if (ratio >= 0.6)  roundVerdict = `Solid. ${guesser} got most of them.`;
+  else if (ratio >= 0.6)  roundVerdict = c.roundSolid(guesser);
   else if (ratio >= 0.4)  roundVerdict = `Right down the middle. Some things left to learn.`;
   else                    roundVerdict = `More surprises than expected. More to discover.`;
   document.getElementById('summary-guesser').textContent = roundVerdict;
@@ -598,9 +669,7 @@ function showEndScreen() {
       winnerEl.textContent = "It's a tie. You know each other equally well.";
     }
   } else {
-    winnerEl.textContent = compatPct >= 70
-      ? 'Strong session. You know each other well.'
-      : 'Good session, some surprises in there.';
+    winnerEl.textContent = COPY[state.gameType].cooperativeWin(compatPct);
   }
 
   document.getElementById('end-matches').textContent = matchCount;
@@ -619,7 +688,8 @@ function showEndScreen() {
     compatPct,
     maxStreak:         state.maxStreak,
     spicyEnabled:      state.spicyEnabled,
-    speedRound:        state.speedRound
+    speedRound:        state.speedRound,
+    gameType:          state.gameType
   });
 
   triggerConfetti();
@@ -639,7 +709,7 @@ function shareResult() {
   const matchCount = allResults.filter(r => r.matched).length;
   const totalQuestions = state.totalRounds * state.questionsPerRound;
   const compatPct = Math.round((matchCount / totalQuestions) * 100);
-  const text = `${state.p1Name} & ${state.p2Name} just played Closer: ${matchCount}/${totalQuestions} matches, ${compatPct}% compatibility. Can you beat us? closergame.netlify.app`;
+  const text = COPY[state.gameType].shareText(state.p1Name, state.p2Name, matchCount, totalQuestions, compatPct);
 
   if (navigator.share) {
     navigator.share({ text }).catch(() => {});

@@ -556,3 +556,570 @@ const QUESTION_BANK = {
     ]
   }
 };
+
+// ─── Friend Mode Question Bank ───────────────────────────────────────────────
+// Used when state.gameType === 'friends'. No romantic/couple framing anywhere.
+
+const FRIEND_QUESTION_BANK = {
+  habits: {
+    label: 'Habits & Quirks',
+    icon: '☀️',
+    questions: [
+      {
+        id: 'fh1',
+        text: "Your most-checked app in the first five minutes of waking up:",
+        options: [
+          "Instagram or TikTok",
+          "Messages or email",
+          "News or a podcast app",
+          "I don't check my phone right away"
+        ]
+      },
+      {
+        id: 'fh2',
+        text: "Your approach to replying to texts:",
+        options: [
+          "I reply almost immediately",
+          "I see it and reply when I have energy",
+          "I forget and apologize later",
+          "Depends entirely on who it's from"
+        ]
+      },
+      {
+        id: 'fh3',
+        text: "At a restaurant, you usually:",
+        options: [
+          "Know what you want before opening the menu",
+          "Order whatever sounds best that day",
+          "Ask the table what they're getting first",
+          "Panic-order whatever the server suggests"
+        ]
+      },
+      {
+        id: 'fh4',
+        text: "When a new show is recommended to you, you:",
+        options: [
+          "Binge it immediately",
+          "Add it to a list and maybe never watch it",
+          "Watch one episode to test it first",
+          "Need multiple recommendations before I start"
+        ]
+      },
+      {
+        id: 'fh5',
+        text: "Your sleep schedule is best described as:",
+        options: [
+          "Early to bed, early to rise — consistently",
+          "Night owl, always",
+          "Totally inconsistent, no pattern",
+          "Whatever gets me 8 hours, I don't care when"
+        ]
+      },
+      {
+        id: 'fh6',
+        text: "When you're bored, your default is to:",
+        options: [
+          "Scroll social media",
+          "Find someone to hang out with",
+          "Start a project or creative thing",
+          "Watch something or play a game"
+        ]
+      },
+      {
+        id: 'fh7',
+        text: "Your relationship with being on time:",
+        options: [
+          "Always early — punctuality is non-negotiable",
+          "I aim for on time and mostly succeed",
+          "Chronically 5 minutes late, it's a thing",
+          "I try but life always conspires against me"
+        ]
+      },
+      {
+        id: 'fh8',
+        text: "When you can't find something, you:",
+        options: [
+          "Retrace my steps methodically",
+          "Ask someone else immediately",
+          "Tear everything apart looking",
+          "Give up and assume it'll turn up"
+        ]
+      },
+      {
+        id: 'fh9',
+        text: "Your desk or workspace is usually:",
+        options: [
+          "Spotlessly organized",
+          "Organized chaos — messy but I know where everything is",
+          "A disaster, but it works for me",
+          "It varies wildly depending on the week"
+        ]
+      },
+      {
+        id: 'fh10',
+        text: "Planning a night out, you prefer:",
+        options: [
+          "All details sorted well in advance",
+          "A rough plan is fine, we'll figure it out",
+          "Last-minute always feels more alive",
+          "Whatever the group decides — I'm easy"
+        ]
+      }
+    ]
+  },
+
+  opinions: {
+    label: 'Hot Takes',
+    icon: '🎯',
+    questions: [
+      {
+        id: 'fo1',
+        text: "Your honest take on small talk:",
+        options: [
+          "I actually enjoy it",
+          "Necessary evil — I've made peace with it",
+          "Genuinely painful every time",
+          "Fine if it leads somewhere real quickly"
+        ]
+      },
+      {
+        id: 'fo2',
+        text: "Mornings on weekends should be:",
+        options: [
+          "Productive — best time of day",
+          "Slow and sacred — no agenda allowed",
+          "Used for exercise or movement",
+          "Slept through, honestly"
+        ]
+      },
+      {
+        id: 'fo3',
+        text: "The right number of people at a hangout:",
+        options: [
+          "2 or 3 max — anything bigger is exhausting",
+          "4 to 6 — perfect group energy",
+          "The more the better, I love a crowd",
+          "Depends entirely on my mood"
+        ]
+      },
+      {
+        id: 'fo4',
+        text: "Your honest take on social media:",
+        options: [
+          "Mostly fine — I'm intentional about it",
+          "A necessary evil for staying connected",
+          "A net negative I keep using anyway",
+          "Something I'm actively trying to use less"
+        ]
+      },
+      {
+        id: 'fo5',
+        text: "When someone gives you a bad movie recommendation:",
+        options: [
+          "I tell them my honest opinion",
+          "I give a vague 'it was interesting'",
+          "I say nothing and quietly note it",
+          "I ask what they liked and try to understand"
+        ]
+      },
+      {
+        id: 'fo6',
+        text: "The best part of a vacation is:",
+        options: [
+          "Getting there — I love the travel itself",
+          "The first day somewhere completely new",
+          "The middle days when you're in the groove",
+          "Coming home and telling people about it"
+        ]
+      },
+      {
+        id: 'fo7',
+        text: "Your take on being wrong about something:",
+        options: [
+          "I admit it pretty easily and move on",
+          "I admit it but quietly think about it after",
+          "I need a minute before I can own it",
+          "It haunts me longer than it should"
+        ]
+      },
+      {
+        id: 'fo8',
+        text: "Your relationship with exercise:",
+        options: [
+          "I genuinely enjoy it",
+          "I feel good after — it's just hard to start",
+          "I do it out of obligation, not joy",
+          "Still searching for a form I actually like"
+        ]
+      },
+      {
+        id: 'fo9',
+        text: "The worst part of traveling:",
+        options: [
+          "Airports, transit, and logistics",
+          "Living out of a suitcase",
+          "The planning before you go",
+          "Coming back to normal life"
+        ]
+      },
+      {
+        id: 'fo10',
+        text: "Settling down vs. keeping options open:",
+        options: [
+          "I want roots — stability is the goal",
+          "I want flexibility for as long as possible",
+          "Somewhere in the middle, honestly",
+          "I've already settled into what I want"
+        ]
+      }
+    ]
+  },
+
+  story: {
+    label: 'Your Story',
+    icon: '💌',
+    questions: [
+      {
+        id: 'fs1',
+        text: "What your younger self would be most surprised by about your life now:",
+        options: [
+          "How different my priorities turned out to be",
+          "How similar to what I imagined it actually is",
+          "How much harder certain things are than I expected",
+          "How little I care about things I thought would matter"
+        ]
+      },
+      {
+        id: 'fs2',
+        text: "The subject in school you were surprisingly good at:",
+        options: [
+          "Something creative — art, music, or writing",
+          "Something technical — math, science, or coding",
+          "Something social — history, English, or debate",
+          "Honestly I was pretty average across the board"
+        ]
+      },
+      {
+        id: 'fs3',
+        text: "The compliment you get most often that still surprises you:",
+        options: [
+          "That I'm funny",
+          "That I'm reliable or dependable",
+          "That I seem confident",
+          "That I'm easy to talk to"
+        ]
+      },
+      {
+        id: 'fs4',
+        text: "When you were a kid, adults would describe you as:",
+        options: [
+          "The quiet one",
+          "The wild one",
+          "The responsible one",
+          "The funny one"
+        ]
+      },
+      {
+        id: 'fs5',
+        text: "The type of social situation that drains you most:",
+        options: [
+          "Parties where I don't know many people",
+          "Forced group activities",
+          "One-on-ones with someone I don't know well",
+          "Anything where I'm expected to perform or present"
+        ]
+      },
+      {
+        id: 'fs6',
+        text: "Something you got obsessed with at some point and mostly left behind:",
+        options: [
+          "A hobby or creative pursuit",
+          "A specific genre of music or media",
+          "A cause or philosophical phase",
+          "A fitness or health routine"
+        ]
+      },
+      {
+        id: 'fs7',
+        text: "Your signature move in an argument as a kid:",
+        options: [
+          "Crying immediately",
+          "Going completely silent",
+          "Fighting back with everything I had",
+          "Running to someone else for backup"
+        ]
+      },
+      {
+        id: 'fs8',
+        text: "Making new friends as an adult:",
+        options: [
+          "I find it pretty natural still",
+          "I'm more selective than I used to be",
+          "I'm genuinely bad at it now",
+          "I rely entirely on circumstance and proximity"
+        ]
+      }
+    ]
+  },
+
+  futures: {
+    label: 'Big Plans',
+    icon: '✨',
+    questions: [
+      {
+        id: 'ff1',
+        text: "In 10 years, you'd most like to be known for:",
+        options: [
+          "Something you created",
+          "The relationships you built",
+          "A career or professional achievement",
+          "Living well entirely on your own terms"
+        ]
+      },
+      {
+        id: 'ff2',
+        text: "Your ideal work setup if money wasn't a factor:",
+        options: [
+          "Building something entirely your own",
+          "Working with a small, great team on something meaningful",
+          "True flexibility — work when and where you want",
+          "Honestly, not working much at all"
+        ]
+      },
+      {
+        id: 'ff3',
+        text: "The place you most want to live that you haven't yet:",
+        options: [
+          "A big city you haven't fully explored",
+          "A quieter, slower place",
+          "Another country entirely",
+          "I'm actually content where I am"
+        ]
+      },
+      {
+        id: 'ff4',
+        text: "The thing you want to genuinely get better at in the next year:",
+        options: [
+          "A skill — something practical or creative",
+          "A relationship thing — being more present",
+          "A health or physical thing",
+          "How I manage my time or mental energy"
+        ]
+      },
+      {
+        id: 'ff5',
+        text: "Your biggest ambition you rarely say out loud:",
+        options: [
+          "Making something creative that reaches a lot of people",
+          "Building serious financial security",
+          "Having a real impact on a specific community",
+          "I actually say my ambitions out loud pretty freely"
+        ]
+      },
+      {
+        id: 'ff6',
+        text: "The version of your future self you're most optimistic about:",
+        options: [
+          "The one who figured out the work-life balance",
+          "The one who built something meaningful",
+          "The one with deep, lasting friendships",
+          "The one who finally got the health stuff right"
+        ]
+      },
+      {
+        id: 'ff7',
+        text: "When you imagine slowing down later in life:",
+        options: [
+          "I want to stay active and keep doing things",
+          "I want to slow way down and just enjoy things",
+          "I honestly haven't thought about it much",
+          "Travel — see everything I've been putting off"
+        ]
+      },
+      {
+        id: 'ff8',
+        text: "The place you'd most want to visit before anything else:",
+        options: [
+          "Somewhere in Asia — Japan, Southeast Asia, or beyond",
+          "Somewhere in Europe I haven't fully explored",
+          "South America — especially somewhere remote",
+          "I want to explore my own country/region better first"
+        ]
+      }
+    ]
+  },
+
+  selfknow: {
+    label: 'Know Yourself',
+    icon: '🔍',
+    questions: [
+      {
+        id: 'fk1',
+        text: "You are most yourself when:",
+        options: [
+          "You're with a small group of close people",
+          "You're completely alone",
+          "You're doing something physical or creative",
+          "You're in a new place or unfamiliar situation"
+        ]
+      },
+      {
+        id: 'fk2',
+        text: "Your default energy in a group:",
+        options: [
+          "I tend to lead or steer the conversation",
+          "I observe more than I speak",
+          "I match and amplify whoever's loudest",
+          "I'm the one asking questions"
+        ]
+      },
+      {
+        id: 'fk3',
+        text: "The emotion you find hardest to express:",
+        options: [
+          "Anger",
+          "Sadness or vulnerability",
+          "Genuine affection or appreciation",
+          "Disappointment in someone"
+        ]
+      },
+      {
+        id: 'fk4',
+        text: "The feedback you'd hate receiving most:",
+        options: [
+          "\"You're too intense\"",
+          "\"You need to open up more\"",
+          "\"You're kind of flaky\"",
+          "\"You overthink everything\""
+        ]
+      },
+      {
+        id: 'fk5',
+        text: "Your superpower in a social setting:",
+        options: [
+          "Reading the room — I always know the vibe",
+          "Making people feel at ease quickly",
+          "Remembering details about people",
+          "Saying the thing everyone else was thinking"
+        ]
+      },
+      {
+        id: 'fk6',
+        text: "After a hard or draining stretch, what reliably resets you:",
+        options: [
+          "Being around specific people who get it",
+          "Getting physical — movement, exercise, outside",
+          "Creating something or working with your hands",
+          "Alone time with no obligations"
+        ]
+      },
+      {
+        id: 'fk7',
+        text: "Your most irrational fear you mostly keep to yourself:",
+        options: [
+          "Something physical — a specific animal, place, or sensation",
+          "A social fear — being publicly humiliated or exposed",
+          "An existential one — time, mortality, or uncertainty",
+          "A logistical one — missing something, being unprepared"
+        ]
+      },
+      {
+        id: 'fk8',
+        text: "How you actually handle conflict:",
+        options: [
+          "I address it directly as soon as possible",
+          "I sit with it first, then bring it up calmly",
+          "I avoid it until it becomes unavoidable",
+          "I go quiet and hope it resolves itself"
+        ]
+      }
+    ]
+  },
+
+  challenge: {
+    label: 'Friend Challenge',
+    icon: '🌶️',
+    questions: [
+      {
+        id: 'fc1',
+        text: "If your friends were being fully honest, your worst habit is:",
+        options: [
+          "Canceling plans at the last minute",
+          "Being on your phone too much in person",
+          "Being consistently late to things",
+          "Giving unsolicited opinions nobody asked for"
+        ]
+      },
+      {
+        id: 'fc2',
+        text: "Something you've pretended to like to fit in:",
+        options: [
+          "A type of music or media",
+          "A food or drink",
+          "A social activity or sport",
+          "A group's specific sense of humor"
+        ]
+      },
+      {
+        id: 'fc3',
+        text: "The most embarrassing thing that's happened to you in public:",
+        options: [
+          "Something physical — fell, spilled, or collided spectacularly",
+          "Something social — said something weird at the wrong moment",
+          "A phone or technology fail at the worst time",
+          "Something so bad I've partially suppressed the memory"
+        ]
+      },
+      {
+        id: 'fc4',
+        text: "When you've been the most dramatic about something minor:",
+        options: [
+          "A tech issue or device failing",
+          "A minor inconvenience while traveling",
+          "Something food or restaurant related",
+          "Bad weather ruining a plan"
+        ]
+      },
+      {
+        id: 'fc5',
+        text: "Your most controversial opinion you'll actually defend:",
+        options: [
+          "A food one — something everyone loves that you genuinely don't",
+          "An entertainment one — a beloved show or movie you can't stand",
+          "A social norms one — something people do that you think is overrated",
+          "I don't really have controversial opinions — I'm basically correct"
+        ]
+      },
+      {
+        id: 'fc6',
+        text: "The thing you're worst at but rarely admit:",
+        options: [
+          "Directions and navigation",
+          "Keeping in touch with people",
+          "Anything requiring real patience",
+          "Anything requiring physical coordination"
+        ]
+      },
+      {
+        id: 'fc7',
+        text: "If someone read your search history right now, they'd find:",
+        options: [
+          "Evidence I'm anxious about very specific things",
+          "A surprisingly obscure hobby or interest",
+          "A lot of random late-night rabbit holes",
+          "Mostly mundane stuff — work, food, news"
+        ]
+      },
+      {
+        id: 'fc8',
+        text: "The most childish thing you still do:",
+        options: [
+          "Avoid certain foods like a picky kid",
+          "Get genuinely upset about game or movie outcomes",
+          "Need a specific comfort routine to sleep",
+          "Hold onto superstitions I can't fully explain"
+        ]
+      }
+    ]
+  }
+};

@@ -33,7 +33,10 @@ async function renderLeaderboard() {
   sessions.forEach(s => {
     const isBest = s.compat_pct === bestCompat;
     const date   = new Date(s.played_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const mode   = s.mode === 'competitive' ? 'Competitive' : 'Cooperative';
+    const mode      = s.mode === 'competitive' ? 'Competitive' : 'Cooperative';
+    const typeLabel = s.game_type === 'friends'
+      ? '<span class="inline-block text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-deep/10 text-deep ml-1">Friends</span>'
+      : '';
 
     const tr = document.createElement('tr');
     tr.className = 'border-b border-[#E2D9CE] last:border-b-0 transition-colors hover:bg-cream';
@@ -42,7 +45,7 @@ async function renderLeaderboard() {
     tr.innerHTML = `
       <td class="px-5 py-4 text-[#5A5A5A]">${date}</td>
       <td class="px-5 py-4 text-deep font-medium">${escHtml(s.p1_name)} &amp; ${escHtml(s.p2_name)}</td>
-      <td class="px-5 py-4 text-[#9A9A9A]">${mode}${s.spicy ? ' · 🌶' : ''}${s.speed ? ' · ⚡' : ''}</td>
+      <td class="px-5 py-4 text-[#9A9A9A]">${mode}${typeLabel}${s.spicy ? ' · 🌶' : ''}${s.speed ? ' · ⚡' : ''}</td>
       <td class="px-5 py-4 text-center font-bold" style="color:${compatColor(s.compat_pct)}">${s.compat_pct}%</td>
       <td class="px-5 py-4 text-center text-[#9A9A9A]">${s.best_streak}x</td>
     `;

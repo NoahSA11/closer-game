@@ -79,7 +79,8 @@ async function saveGameSession(data) {
     compat_pct:          data.compatPct,
     best_streak:         data.maxStreak,
     spicy:               data.spicyEnabled,
-    speed:               data.speedRound
+    speed:               data.speedRound,
+    game_type:           data.gameType || 'couples'
   });
   if (error) console.error('[Closer] save failed:', error.message);
 }
