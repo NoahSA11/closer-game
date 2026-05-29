@@ -190,7 +190,11 @@ function startGame() {
 function showCoinFlip() {
   showScreen('screen-coinflip');
   const subjectName = state.subjectPlayer === 1 ? state.p1Name : state.p2Name;
+  const guesserName = state.subjectPlayer === 1 ? state.p2Name : state.p1Name;
   document.getElementById('coinflip-subject').textContent = subjectName;
+  // Fix 9: define roles at the moment they're first announced
+  const roleDesc = document.getElementById('coinflip-role-desc');
+  if (roleDesc) roleDesc.textContent = `${subjectName} = Subject (answers honestly) · ${guesserName} = Guesser (predicts their answers)`;
   document.getElementById('coinflip-reveal').style.opacity = '0';
   document.getElementById('coinflip-btn').style.display = 'none';
 
@@ -212,6 +216,7 @@ function showRoundIntro() {
   const subject = getSubjectName();
   const guesser = getGuesserName();
   const speed = isSpeedRound();
+  const rolesSwapped = state.round > 1 && state.round % 2 === 0;
 
   const roundTag = speed
     ? `⚡ Speed Round — ${state.round} of ${state.totalRounds}`
@@ -224,6 +229,17 @@ function showRoundIntro() {
     : `${subject} answers ${state.questionsPerRound} questions about themselves. Their answers lock — hidden from you. Then ${guesser} guesses what ${subject} chose.`;
   document.getElementById('round-intro-desc').textContent = desc;
   document.getElementById('round-intro-btn').textContent = `Begin — ${subject} goes first`;
+
+  // Fix 10: make role swap unmissable on even rounds
+  const swapBanner = document.getElementById('round-intro-role-swap');
+  if (swapBanner) {
+    if (rolesSwapped) {
+      swapBanner.innerHTML = `<strong>Roles switch this round.</strong><br>${subject} answers. ${guesser} predicts.`;
+      swapBanner.style.display = 'block';
+    } else {
+      swapBanner.style.display = 'none';
+    }
+  }
 
   state.subjectAnswers = [];
   state.guesserAnswers = [];
@@ -260,8 +276,13 @@ function showSubjectQuestion() {
 
   if (isSpeedRound()) {
     startSpeedTimer('subject-speed-timer', 'subject-timer-ring', 'subject-timer-num', () => {
-      const btns = container.querySelectorAll('.option-btn');
-      if (btns.length && !btns[0].disabled) lockSubjectAnswer(0, btns[0], container);
+      const btns = container.querySelectorAll('.option-btn:not([disabled])');
+      if (btns.length) {
+        // Fix 16: random pick on timeout — avoids systematic option-A bias
+        const randIdx = Math.floor(Math.random() * btns.length);
+        const originalIdx = Array.from(container.querySelectorAll('.option-btn')).indexOf(btns[randIdx]);
+        lockSubjectAnswer(originalIdx, btns[randIdx], container);
+      }
     });
   }
 }
@@ -279,19 +300,42 @@ function lockSubjectAnswer(idx, btn, container) {
     if (state.currentQIndex < state.questionsPerRound) {
       showSubjectQuestion();
     } else {
-      showHandoff();
+      showSubjectSealed(); // Fix 13: show sealed confirmation before handoff
     }
   }, 380);
+}
+
+// Fix 13: sealed confirmation screen after Subject completes all answers
+function showSubjectSealed() {
+  const guesser = getGuesserName();
+  const subject = getSubjectName();
+  const sealedOverlay = document.getElementById('subject-sealed-overlay');
+  const questionsArea = document.getElementById('subject-questions-area');
+  const sealedGuesser = document.getElementById('subject-sealed-guesser');
+  if (sealedOverlay && questionsArea) {
+    if (sealedGuesser) sealedGuesser.textContent = guesser;
+    questionsArea.style.display = 'none';
+    sealedOverlay.style.display = 'flex';
+  } else {
+    showHandoff(); // fallback if elements missing
+  }
 }
 
 // ─── Handoff ──────────────────────────────────────────────────
 
 function showHandoff() {
+  // Reset sealed overlay in case we return here
+  const sealedOverlay = document.getElementById('subject-sealed-overlay');
+  const questionsArea = document.getElementById('subject-questions-area');
+  if (sealedOverlay) sealedOverlay.style.display = 'none';
+  if (questionsArea) questionsArea.style.display = 'block';
+
   showScreen('screen-handoff');
   const subject = getSubjectName();
   const guesser = getGuesserName();
   document.getElementById('handoff-locked').textContent = `${subject}'s answers are locked.`;
-  document.getElementById('handoff-pass').textContent = `Pass the device to ${guesser}.`;
+  // Fix 14: anticipation copy instead of plain logistical instruction
+  document.getElementById('handoff-pass').textContent = `${guesser}, can you read ${subject}'s mind?`;
   document.getElementById('handoff-btn').textContent = `I'm ${guesser} — I'm ready`;
   state.currentQIndex = 0;
 }
@@ -326,8 +370,13 @@ function showGuesserQuestion() {
 
   if (isSpeedRound()) {
     startSpeedTimer('guesser-speed-timer', 'guesser-timer-ring', 'guesser-timer-num', () => {
-      const btns = container.querySelectorAll('.option-btn');
-      if (btns.length && !btns[0].disabled) lockGuesserAnswer(0, btns[0], container);
+      const btns = container.querySelectorAll('.option-btn:not([disabled])');
+      if (btns.length) {
+        // Fix 16: random pick on timeout — avoids systematic option-A bias
+        const randIdx = Math.floor(Math.random() * btns.length);
+        const originalIdx = Array.from(container.querySelectorAll('.option-btn')).indexOf(btns[randIdx]);
+        lockGuesserAnswer(originalIdx, btns[randIdx], container);
+      }
     });
   }
 }
@@ -448,7 +497,16 @@ function showRoundSummary() {
     ? '⚡ Speed Round Complete'
     : `Round ${state.round} Complete`;
   document.getElementById('summary-match-stat').textContent = `${matchCount} of ${state.questionsPerRound} matched`;
-  document.getElementById('summary-guesser').textContent = `${guesser} got ${matchCount} right`;
+
+  // Fix 19: conditional copy based on actual match rate
+  const ratio = matchCount / state.questionsPerRound;
+  let roundVerdict;
+  if (ratio === 1)        roundVerdict = `Perfect round — ${guesser} knows ${getSubjectName()} cold.`;
+  else if (ratio >= 0.8)  roundVerdict = `Strong round. One surprise in there.`;
+  else if (ratio >= 0.6)  roundVerdict = `Solid — ${guesser} got most of them.`;
+  else if (ratio >= 0.4)  roundVerdict = `Right down the middle. Some things left to learn.`;
+  else                    roundVerdict = `More surprises than expected. More to discover.`;
+  document.getElementById('summary-guesser').textContent = roundVerdict;
 
   const dots = document.getElementById('summary-dots');
   dots.innerHTML = '';
@@ -548,6 +606,24 @@ function getCompatLabel(pct) {
   if (pct >= 60) return 'Strong connection — a few surprises.';
   if (pct >= 40) return 'More to discover together.';
   return 'Lots of room to learn each other.';
+}
+
+// Fix 21: share result via Web Share API with clipboard fallback
+function shareResult() {
+  const allResults = state.roundResults.flat();
+  const matchCount = allResults.filter(r => r.matched).length;
+  const totalQuestions = state.totalRounds * state.questionsPerRound;
+  const compatPct = Math.round((matchCount / totalQuestions) * 100);
+  const text = `${state.p1Name} & ${state.p2Name} just played Closer — ${matchCount}/${totalQuestions} matches, ${compatPct}% compatibility. Can you beat us? closergame.netlify.app`;
+
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('btn-share');
+      if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = 'Share Result'; }, 2000); }
+    }).catch(() => {});
+  }
 }
 
 function playAgain() {

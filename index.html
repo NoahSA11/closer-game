@@ -235,12 +235,15 @@
           A weekly game for couples. Answer questions about yourself. Your partner guesses what you chose. See who knows who — one reveal at a time.
         </p>
         <div class="fade-slide-up-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <button onclick="startGame()" class="group bg-rose text-white font-semibold text-base px-8 py-4 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer flex items-center gap-3">
-            Start Playing Free
-            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </button>
+          <div class="flex flex-col items-start gap-1">
+            <button onclick="startGame()" class="group bg-rose text-white font-semibold text-base px-8 py-4 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer flex items-center gap-3">
+              Start Playing Free
+              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+            <span class="text-white/40 text-xs pl-1">No account required — takes 60 seconds to start</span>
+          </div>
           <a href="#how" class="text-white/60 hover:text-white text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
@@ -458,7 +461,7 @@
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,20,10,0.1)] border border-[#E2D9CE] p-8">
       <h2 class="font-serif text-3xl font-medium text-deep mb-1">Welcome back</h2>
-      <p class="text-sm text-[#9A9A9A] mb-8">Sign in to save your game history.</p>
+      <p id="login-subtitle" class="text-sm text-[#9A9A9A] mb-8">Sign in to save every game you play together — and see how you improve over time.</p>
 
       <!-- Google -->
       <button onclick="handleGoogleSignIn()" class="w-full flex items-center justify-center gap-3 border border-[#E2D9CE] rounded-xl py-3 px-4 text-sm font-medium text-deep hover:bg-cream transition-all cursor-pointer mb-5">
@@ -491,6 +494,7 @@
         <span class="mx-2">·</span>
         <button onclick="skipAuth()" class="hover:text-deep transition-colors cursor-pointer">Skip for now</button>
       </div>
+      <p class="text-center text-xs text-[#C0B8AF] mt-3">Playing as a guest — your session won't be saved.</p>
     </div>
   </div>
 </section>
@@ -512,13 +516,16 @@
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,20,10,0.1)] border border-[#E2D9CE] p-8">
       <h2 class="font-serif text-3xl font-medium text-deep mb-1">Create account</h2>
-      <p class="text-sm text-[#9A9A9A] mb-8">One account per couple is enough.</p>
+      <p class="text-sm text-[#9A9A9A] mb-8">Create one shared account — you'll both use it to track your games.</p>
 
       <div class="space-y-4 mb-2">
         <input id="register-email" type="email" placeholder="Email address" autocomplete="email"
           class="w-full px-4 py-3 bg-cream border-[1.5px] border-[#E2D9CE] rounded-xl text-sm text-deep outline-none transition-colors focus:border-deep focus:bg-white placeholder-[#C0B8AF]">
-        <input id="register-password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password"
-          class="w-full px-4 py-3 bg-cream border-[1.5px] border-[#E2D9CE] rounded-xl text-sm text-deep outline-none transition-colors focus:border-deep focus:bg-white placeholder-[#C0B8AF]">
+        <div>
+          <input id="register-password" type="password" placeholder="Password" autocomplete="new-password"
+            class="w-full px-4 py-3 bg-cream border-[1.5px] border-[#E2D9CE] rounded-xl text-sm text-deep outline-none transition-colors focus:border-deep focus:bg-white placeholder-[#C0B8AF]">
+          <p class="text-xs text-[#9A9A9A] mt-1 pl-1">At least 6 characters</p>
+        </div>
       </div>
 
       <div id="register-error" class="text-sm text-[#C0392B] mt-3 mb-1 hidden"></div>
@@ -634,7 +641,7 @@
               🌶️ Spicy Questions
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#EECEC9;color:#9E5047;">Adults</span>
             </div>
-            <div class="text-[11px] text-[#9A9A9A] mt-0.5">Adds intimate relationship questions to the mix</div>
+            <div class="text-[11px] text-[#9A9A9A] mt-0.5">Intimate questions about your relationship — tasteful but personal</div>
           </div>
           <div class="relative ml-4 flex-shrink-0 w-11 h-6 rounded-full" id="toggle-spicy-track" style="background:#D1C9BE; transition: background 0.2s;">
             <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm" id="toggle-spicy-knob" style="transition: transform 0.18s ease;"></div>
@@ -669,7 +676,7 @@
 
     <div id="coinflip-reveal" style="opacity:0; transition:opacity 0.6s ease;">
       <div class="font-serif text-5xl md:text-6xl font-medium text-white mb-3" id="coinflip-subject">—</div>
-      <p class="text-white/40 text-sm mb-12 max-w-xs">They'll answer first. Their answers lock before their partner sees them.</p>
+      <p id="coinflip-role-desc" class="text-white/40 text-sm mb-12 max-w-xs">They'll answer first. Their answers lock before their partner sees them.</p>
       <button id="coinflip-btn" onclick="showRoundIntro()" style="display:none"
         class="bg-rose text-white font-semibold px-10 py-4 rounded-full hover:bg-rose-dark transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer text-base">
         Let's go →
@@ -684,6 +691,8 @@
 <section id="screen-round-intro" class="screen">
   <div class="min-h-screen bg-cream flex flex-col items-center justify-center px-5 text-center">
     <span id="round-intro-num" class="inline-block bg-rose/15 text-rose text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6">Round 1 of 2</span>
+    <!-- Fix 10: role swap announcement — populated by app.js, hidden on round 1 -->
+    <div id="round-intro-role-swap" style="display:none;" class="bg-deep text-white text-sm font-semibold px-5 py-3 rounded-xl mb-5 max-w-sm text-center leading-snug"></div>
     <h2 id="round-intro-headline" class="font-serif text-4xl md:text-5xl font-medium text-deep mb-5 max-w-sm">Round 1 is about Alex</h2>
     <p id="round-intro-desc" class="text-[#5A5A5A] text-base leading-relaxed max-w-md mb-10">
       Alex answers 5 questions about themselves. Their answers lock and stay hidden. Then Jamie guesses what Alex chose.
@@ -714,33 +723,48 @@
 <!-- ═══════════════════════════════════════════════ -->
 <section id="screen-subject" class="screen bg-cream">
   <div class="max-w-xl mx-auto px-5">
-    <!-- Header -->
-    <div class="pt-6 pb-4">
-      <div class="flex justify-between items-center mb-2">
-        <span id="subject-label" class="text-xs font-bold uppercase tracking-[0.08em] text-[#9A9A9A]">Your turn to answer</span>
-        <span id="subject-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 5</span>
+
+    <!-- Questions area (hidden when sealed) -->
+    <div id="subject-questions-area">
+      <!-- Header -->
+      <div class="pt-6 pb-4">
+        <div class="flex justify-between items-center mb-2">
+          <span id="subject-label" class="text-xs font-bold uppercase tracking-[0.08em] text-[#9A9A9A]">Your turn to answer</span>
+          <span id="subject-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 5</span>
+        </div>
+        <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
+          <div id="subject-progress-bar" class="h-full bg-deep rounded-full progress-fill" style="width:0%"></div>
+        </div>
       </div>
-      <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
-        <div id="subject-progress-bar" class="h-full bg-deep rounded-full progress-fill" style="width:0%"></div>
+
+      <!-- Speed timer (visible only in speed rounds) -->
+      <div id="subject-speed-timer" style="display:none" class="flex items-center justify-center gap-3 py-3 px-4 bg-white rounded-xl border border-[#E2D9CE] mb-3">
+        <div id="subject-timer-ring" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style="background:#2D6E4E; transition: background 0.5s;">
+          <span id="subject-timer-num" class="text-base font-bold">15</span>
+        </div>
+        <span class="text-sm text-[#5A5A5A] font-medium">seconds to answer</span>
       </div>
+
+      <!-- Question card -->
+      <div class="bg-white rounded-2xl shadow-[0_4px_24px_rgba(30,20,10,0.08)] border border-[#E2D9CE] p-7 mb-3">
+        <span id="subject-category-tag" class="inline-block bg-rose/15 text-rose text-[11px] font-bold uppercase tracking-[0.08em] px-3 py-1 rounded-full mb-4">Daily Life</span>
+        <p id="subject-q-text" class="font-serif text-2xl font-medium text-deep leading-snug">Question text loads here</p>
+      </div>
+
+      <!-- Options -->
+      <div id="subject-options" class="space-y-2.5 pb-10"></div>
     </div>
 
-    <!-- Speed timer (visible only in speed rounds) -->
-    <div id="subject-speed-timer" style="display:none" class="flex items-center justify-center gap-3 py-3 px-4 bg-white rounded-xl border border-[#E2D9CE] mb-3">
-      <div id="subject-timer-ring" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style="background:#2D6E4E; transition: background 0.5s;">
-        <span id="subject-timer-num" class="text-base font-bold">15</span>
-      </div>
-      <span class="text-sm text-[#5A5A5A] font-medium">seconds to answer</span>
+    <!-- Fix 13: Sealed confirmation overlay (shown after last answer) -->
+    <div id="subject-sealed-overlay" style="display:none; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:20px;">
+      <div class="text-6xl mb-6">🔒</div>
+      <h2 class="font-serif text-3xl font-medium text-deep mb-3">Answers sealed.</h2>
+      <p class="text-[#5A5A5A] text-base mb-10 max-w-xs">Pass the phone to <strong id="subject-sealed-guesser">your partner</strong>. They can't see what you chose.</p>
+      <button onclick="showHandoff()" class="bg-deep text-white font-bold px-10 py-4 rounded-full hover:opacity-90 transition-all cursor-pointer text-base">
+        Pass to partner →
+      </button>
     </div>
 
-    <!-- Question card -->
-    <div class="bg-white rounded-2xl shadow-[0_4px_24px_rgba(30,20,10,0.08)] border border-[#E2D9CE] p-7 mb-3">
-      <span id="subject-category-tag" class="inline-block bg-rose/15 text-rose text-[11px] font-bold uppercase tracking-[0.08em] px-3 py-1 rounded-full mb-4">Daily Life</span>
-      <p id="subject-q-text" class="font-serif text-2xl font-medium text-deep leading-snug">Question text loads here</p>
-    </div>
-
-    <!-- Options -->
-    <div id="subject-options" class="space-y-2.5 pb-10"></div>
   </div>
 </section>
 
@@ -881,14 +905,16 @@
   <div class="min-h-screen hero-gradient flex flex-col items-center justify-center px-5 text-center py-12">
     <div class="text-white/30 font-serif text-xl mb-10">♡ Closer</div>
 
+    <!-- Fix 22: compat label is the emotional headline — place it first -->
+    <p class="font-serif text-2xl font-medium text-white mb-4" id="end-compat-label">Strong connection — a few surprises.</p>
+
     <!-- Compat ring -->
-    <div class="w-36 h-36 rounded-full border-2 border-white/15 bg-white/5 flex flex-col items-center justify-center mb-5">
+    <div class="w-32 h-32 rounded-full border-2 border-white/15 bg-white/5 flex flex-col items-center justify-center mb-5">
       <div class="font-serif text-gold text-4xl font-bold leading-none" id="end-compat-pct">70%</div>
       <div class="text-white/30 text-[10px] uppercase tracking-[0.1em] mt-1">match rate</div>
     </div>
 
-    <p class="text-white/40 text-sm mb-2" id="end-compat-label">Strong connection — a few surprises.</p>
-    <h2 class="font-serif text-3xl font-medium text-white mb-10" id="end-winner">Alex wins this round.</h2>
+    <h2 class="font-serif text-2xl font-medium text-white/60 mb-10" id="end-winner">Alex wins this round.</h2>
 
     <!-- Scores -->
     <div class="flex gap-10 bg-white/8 border border-white/10 rounded-2xl px-10 py-6 mb-8">
@@ -918,6 +944,10 @@
     <div class="flex gap-4 flex-wrap justify-center">
       <button onclick="playAgain()" class="bg-white text-deep font-bold px-8 py-3.5 rounded-full hover:opacity-90 transition-all cursor-pointer">
         Play Again
+      </button>
+      <!-- Fix 21: share mechanism -->
+      <button onclick="shareResult()" id="btn-share" class="bg-gold text-white font-bold px-8 py-3.5 rounded-full hover:opacity-90 transition-all cursor-pointer">
+        Share Result
       </button>
       <button onclick="showLeaderboard()" id="btn-view-history" class="border border-white/25 text-white font-medium px-8 py-3.5 rounded-full hover:bg-white/10 transition-all cursor-pointer">
         View History
@@ -962,6 +992,15 @@
           <div class="font-serif text-3xl font-bold text-deep" id="lb-stat-streak">—</div>
           <div class="text-[10px] uppercase tracking-[0.08em] text-[#9A9A9A] mt-1">Best Streak</div>
         </div>
+      </div>
+
+      <!-- Fix 24: trend sparkline (hidden until ≥3 sessions exist) -->
+      <div id="lb-sparkline-wrap" class="hidden bg-white rounded-2xl border border-[#E2D9CE] p-5 mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold uppercase tracking-[0.08em] text-[#9A9A9A]">Last 5 Games — Compat %</span>
+          <span id="lb-sparkline-trend" class="text-xs font-medium"></span>
+        </div>
+        <div id="lb-sparkline-svg-wrap"></div>
       </div>
 
       <!-- Sessions table -->
@@ -1084,7 +1123,9 @@
   // ── Leaderboard ────────────────────────────────────
   function showLeaderboard() {
     if (!getCurrentUser()) {
-      // Guest: bounce to login with a nudge
+      // Fix 23: explain why we're redirecting before bouncing
+      const sub = document.getElementById('login-subtitle');
+      if (sub) sub.textContent = 'Sign in to see your game history.';
       showScreen('screen-login');
       return;
     }
