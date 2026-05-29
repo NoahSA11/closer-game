@@ -199,7 +199,7 @@
       <a href="#how" class="text-sm text-[#5A5A5A] hover:text-deep transition-colors">How it Works</a>
       <a href="#features" class="text-sm text-[#5A5A5A] hover:text-deep transition-colors">For Couples</a>
     </div>
-    <button onclick="startGame()" class="bg-deep text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-deep-mid transition-all hover:-translate-y-0.5 cursor-pointer">
+    <button onclick="launchFromLanding()" class="bg-deep text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-deep-mid transition-all hover:-translate-y-0.5 cursor-pointer">
       Play Now
     </button>
   </nav>
@@ -236,7 +236,7 @@
         </p>
         <div class="fade-slide-up-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div class="flex flex-col items-start gap-1">
-            <button onclick="startGame()" class="group bg-rose text-white font-semibold text-base px-8 py-4 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer flex items-center gap-3">
+            <button onclick="launchFromLanding()" class="group bg-rose text-white font-semibold text-base px-8 py-4 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer flex items-center gap-3">
               Start Playing Free
               <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -429,7 +429,7 @@
         Ready to see who knows who?
       </h2>
       <p class="text-white/50 mb-10 text-base">No account needed. Takes 60 seconds to start.</p>
-      <button onclick="startGame()" class="group bg-rose text-white font-semibold text-lg px-10 py-5 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/40 cursor-pointer inline-flex items-center gap-3">
+      <button onclick="launchFromLanding()" class="group bg-rose text-white font-semibold text-lg px-10 py-5 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/40 cursor-pointer inline-flex items-center gap-3">
         Start Playing Free
         <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -641,7 +641,7 @@
               🌶️ Spicy Questions
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#EECEC9;color:#9E5047;">Adults</span>
             </div>
-            <div class="text-[11px] text-[#9A9A9A] mt-0.5">Intimate questions about your relationship — tasteful but personal</div>
+            <div class="text-[11px] text-[#9A9A9A] mt-0.5">Intimate questions about your relationship — tasteful but personal. Best with a partner you're comfortable with.</div>
           </div>
           <div class="relative ml-4 flex-shrink-0 w-11 h-6 rounded-full" id="toggle-spicy-track" style="background:#D1C9BE; transition: background 0.2s;">
             <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm" id="toggle-spicy-knob" style="transition: transform 0.18s ease;"></div>
@@ -1107,7 +1107,8 @@
   function skipAuth() { initSetup(); }
 
   // Called by all "Start" / "Play Now" buttons on the landing screen
-  function startGame() {
+  // Named differently from app.js startGame() to avoid global scope collision
+  function launchFromLanding() {
     if (getCurrentUser()) {
       initSetup(); // already signed in — skip login
     } else {
