@@ -166,6 +166,10 @@ function startGame() {
   state.p1Name = p1Input || 'Partner 1';
   state.p2Name = p2Input || 'Partner 2';
 
+  // P2: Persist names so Play Again pre-fills them
+  localStorage.setItem('closer-p1', state.p1Name);
+  localStorage.setItem('closer-p2', state.p2Name);
+
   const modeEl = document.querySelector('input[name="mode"]:checked');
   state.mode = modeEl ? modeEl.value : 'competitive';
 
@@ -183,6 +187,27 @@ function startGame() {
   state.subjectPlayer = Math.random() < 0.5 ? 1 : 2;
 
   showCoinFlip();
+}
+
+// P1: Escape paths — quit mid-game with confirmation
+function quitGame() {
+  if (!confirm("Quit this game? Your current progress won't be saved.")) return;
+  clearSpeedTimer();
+  showScreen('screen-setup');
+  // Restore current names so the couple doesn't retype
+  const p1El = document.getElementById('input-p1');
+  const p2El = document.getElementById('input-p2');
+  if (p1El) p1El.value = state.p1Name;
+  if (p2El) p2El.value = state.p2Name;
+}
+
+// P1: Back to setup before any answers locked (no confirm needed)
+function backToSetup() {
+  showScreen('screen-setup');
+  const p1El = document.getElementById('input-p1');
+  const p2El = document.getElementById('input-p2');
+  if (p1El) p1El.value = state.p1Name || localStorage.getItem('closer-p1') || '';
+  if (p2El) p2El.value = state.p2Name || localStorage.getItem('closer-p2') || '';
 }
 
 // ─── Coin Flip ────────────────────────────────────────────────
@@ -219,16 +244,16 @@ function showRoundIntro() {
   const rolesSwapped = state.round > 1 && state.round % 2 === 0;
 
   const roundTag = speed
-    ? `⚡ Speed Round — ${state.round} of ${state.totalRounds}`
+    ? `⚡ Speed Round · Round ${state.round} of ${state.totalRounds}`
     : `Round ${state.round} of ${state.totalRounds}`;
   document.getElementById('round-intro-num').textContent = roundTag;
   document.getElementById('round-intro-headline').textContent = `Round ${state.round} is about ${subject}`;
 
   const desc = speed
     ? `Speed Round! ${subject} answers ${state.questionsPerRound} questions with only 15 seconds each. Answers lock, then ${guesser} does the same. Fast answers, same stakes.`
-    : `${subject} answers ${state.questionsPerRound} questions about themselves. Their answers lock — hidden from you. Then ${guesser} guesses what ${subject} chose.`;
+    : `${subject} answers ${state.questionsPerRound} questions about themselves. Their answers lock, hidden from you. Then ${guesser} guesses what ${subject} chose.`;
   document.getElementById('round-intro-desc').textContent = desc;
-  document.getElementById('round-intro-btn').textContent = `Begin — ${subject} goes first`;
+  document.getElementById('round-intro-btn').textContent = `Begin · ${subject} goes first`;
 
   // Fix 10: make role swap unmissable on even rounds
   const swapBanner = document.getElementById('round-intro-role-swap');
@@ -258,7 +283,7 @@ function showSubjectQuestion() {
   document.getElementById('subject-progress-text').textContent = `${state.currentQIndex + 1} of ${state.questionsPerRound}`;
   document.getElementById('subject-category-tag').textContent = q.categoryLabel;
   document.getElementById('subject-q-text').textContent = q.text;
-  document.getElementById('subject-progress-bar').style.width = `${(state.currentQIndex / state.questionsPerRound) * 100}%`;
+  document.getElementById('subject-progress-bar').style.transform = `scaleX(${state.currentQIndex / state.questionsPerRound})`;
 
   // Hide timer by default; show only in speed round
   const timerEl = document.getElementById('subject-speed-timer');
@@ -336,7 +361,7 @@ function showHandoff() {
   document.getElementById('handoff-locked').textContent = `${subject}'s answers are locked.`;
   // Fix 14: anticipation copy instead of plain logistical instruction
   document.getElementById('handoff-pass').textContent = `${guesser}, can you read ${subject}'s mind?`;
-  document.getElementById('handoff-btn').textContent = `I'm ${guesser} — I'm ready`;
+  document.getElementById('handoff-btn').textContent = `I'm ${guesser}. I'm ready`;
   state.currentQIndex = 0;
 }
 
@@ -349,11 +374,11 @@ function showGuesserQuestion() {
   const subject = getSubjectName();
   const guesser = getGuesserName();
 
-  document.getElementById('guesser-label').textContent = `${guesser} — what would ${subject} choose?`;
+  document.getElementById('guesser-label').textContent = `${guesser}: what would ${subject} choose?`;
   document.getElementById('guesser-progress-text').textContent = `${state.currentQIndex + 1} of ${state.questionsPerRound}`;
   document.getElementById('guesser-category-tag').textContent = q.categoryLabel;
   document.getElementById('guesser-q-text').textContent = q.text;
-  document.getElementById('guesser-progress-bar').style.width = `${(state.currentQIndex / state.questionsPerRound) * 100}%`;
+  document.getElementById('guesser-progress-bar').style.transform = `scaleX(${state.currentQIndex / state.questionsPerRound})`;
 
   const timerEl = document.getElementById('guesser-speed-timer');
   if (timerEl) timerEl.style.display = 'none';
@@ -501,9 +526,9 @@ function showRoundSummary() {
   // Fix 19: conditional copy based on actual match rate
   const ratio = matchCount / state.questionsPerRound;
   let roundVerdict;
-  if (ratio === 1)        roundVerdict = `Perfect round — ${guesser} knows ${getSubjectName()} cold.`;
+  if (ratio === 1)        roundVerdict = `Perfect round. ${guesser} knows ${getSubjectName()} cold.`;
   else if (ratio >= 0.8)  roundVerdict = `Strong round. One surprise in there.`;
-  else if (ratio >= 0.6)  roundVerdict = `Solid — ${guesser} got most of them.`;
+  else if (ratio >= 0.6)  roundVerdict = `Solid. ${guesser} got most of them.`;
   else if (ratio >= 0.4)  roundVerdict = `Right down the middle. Some things left to learn.`;
   else                    roundVerdict = `More surprises than expected. More to discover.`;
   document.getElementById('summary-guesser').textContent = roundVerdict;
@@ -570,12 +595,12 @@ function showEndScreen() {
     } else if (state.scores.p2 > state.scores.p1) {
       winnerEl.textContent = `${state.p2Name} wins this round.`;
     } else {
-      winnerEl.textContent = "It's a tie — you know each other equally well.";
+      winnerEl.textContent = "It's a tie. You know each other equally well.";
     }
   } else {
     winnerEl.textContent = compatPct >= 70
       ? 'Strong session. You know each other well.'
-      : 'Good session — some surprises in there.';
+      : 'Good session, some surprises in there.';
   }
 
   document.getElementById('end-matches').textContent = matchCount;
@@ -603,7 +628,7 @@ function showEndScreen() {
 function getCompatLabel(pct) {
   if (pct === 100) return 'Perfect. You know each other completely.';
   if (pct >= 80) return 'You really know each other.';
-  if (pct >= 60) return 'Strong connection — a few surprises.';
+  if (pct >= 60) return 'Strong connection, a few surprises.';
   if (pct >= 40) return 'More to discover together.';
   return 'Lots of room to learn each other.';
 }
@@ -614,7 +639,7 @@ function shareResult() {
   const matchCount = allResults.filter(r => r.matched).length;
   const totalQuestions = state.totalRounds * state.questionsPerRound;
   const compatPct = Math.round((matchCount / totalQuestions) * 100);
-  const text = `${state.p1Name} & ${state.p2Name} just played Closer — ${matchCount}/${totalQuestions} matches, ${compatPct}% compatibility. Can you beat us? closergame.netlify.app`;
+  const text = `${state.p1Name} & ${state.p2Name} just played Closer: ${matchCount}/${totalQuestions} matches, ${compatPct}% compatibility. Can you beat us? closergame.netlify.app`;
 
   if (navigator.share) {
     navigator.share({ text }).catch(() => {});

@@ -21,7 +21,7 @@
             deep: { DEFAULT: '#1E3A2F', mid: '#2C4A3E', light: '#3D5E50' },
             rose: { DEFAULT: '#C4756A', light: '#EECEC9', dark: '#9E5047' },
             gold: { DEFAULT: '#BF9447', light: '#F0E4C4', dark: '#9A7230' },
-            cream: { DEFAULT: '#FAF7F2', alt: '#F2EBE0' },
+            cream: { DEFAULT: '#F4F6F4', alt: '#F2EBE0' },
             match: { DEFAULT: '#2D6E4E', bg: '#EBF5EF' },
             miss: { DEFAULT: '#8B4A3A', bg: '#F9EEEC' },
           }
@@ -118,8 +118,12 @@
     }
     .option-btn:disabled { cursor: default; }
 
-    /* Progress bar */
-    .progress-fill { transition: width 0.35s ease; }
+    /* Progress bar — use transform:scaleX to avoid layout thrash */
+    .progress-fill {
+      transform-origin: left center;
+      transform: scaleX(0);
+      transition: transform 0.35s ease;
+    }
 
     /* Reveal cards */
     .reveal-card {
@@ -232,7 +236,7 @@
           <em class="text-gold">know each other?</em>
         </h1>
         <p class="fade-slide-up-3 text-lg text-white/60 leading-relaxed mb-10 max-w-md">
-          A weekly game for couples. Answer questions about yourself. Your partner guesses what you chose. See who knows who — one reveal at a time.
+          A weekly game for couples. Answer questions about yourself. Your partner guesses what you chose. See who knows who, one reveal at a time.
         </p>
         <div class="fade-slide-up-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div class="flex flex-col items-start gap-1">
@@ -242,7 +246,7 @@
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </button>
-            <span class="text-white/40 text-xs pl-1">No account required — takes 60 seconds to start</span>
+            <span class="text-white/40 text-xs pl-1">No account required. Takes 60 seconds to start.</span>
           </div>
           <a href="#how" class="text-white/60 hover:text-white text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -343,7 +347,7 @@
             <span class="font-serif text-white font-bold text-lg">2</span>
           </div>
           <h3 class="font-semibold text-deep mb-3">Answer about yourself</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">One partner answers 5 questions honestly. Their answers lock — completely hidden from the other.</p>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">One partner answers 5 questions honestly. Their answers lock, completely hidden from the other.</p>
         </div>
 
         <div class="bg-white rounded-2xl p-8 shadow-[0_4px_24px_rgba(30,20,10,0.07)] border border-[#E2D9CE] relative">
@@ -387,7 +391,7 @@
             <svg class="w-5 h-5 text-gold-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </div>
           <h3 class="font-semibold text-deep mb-2">Balanced for both</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">Neither partner has a built-in advantage. Each round you switch roles — subject and guesser swap every time.</p>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Neither partner has a built-in advantage. Each round you switch roles: subject and guesser swap every time.</p>
         </div>
 
         <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
@@ -395,7 +399,7 @@
             <svg class="w-5 h-5 text-deep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
           </div>
           <h3 class="font-semibold text-deep mb-2">5 categories, 45+ questions</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">Daily Life, Early Days, Big Dreams, Family, and Just for Fun. New questions every session — randomly drawn.</p>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Daily Life, Early Days, Big Dreams, Family, and Just for Fun. New questions every session, randomly drawn.</p>
         </div>
 
         <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
@@ -461,7 +465,7 @@
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,20,10,0.1)] border border-[#E2D9CE] p-8">
       <h2 class="font-serif text-3xl font-medium text-deep mb-1">Welcome back</h2>
-      <p id="login-subtitle" class="text-sm text-[#9A9A9A] mb-8">Sign in to save every game you play together — and see how you improve over time.</p>
+      <p id="login-subtitle" class="text-sm text-[#9A9A9A] mb-8">Sign in to save every game you play together and see how you improve over time.</p>
 
       <!-- Google -->
       <button onclick="handleGoogleSignIn()" class="w-full flex items-center justify-center gap-3 border border-[#E2D9CE] rounded-xl py-3 px-4 text-sm font-medium text-deep hover:bg-cream transition-all cursor-pointer mb-5">
@@ -494,7 +498,7 @@
         <span class="mx-2">·</span>
         <button onclick="skipAuth()" class="hover:text-deep transition-colors cursor-pointer">Skip for now</button>
       </div>
-      <p class="text-center text-xs text-[#C0B8AF] mt-3">Playing as a guest — your session won't be saved.</p>
+      <p class="text-center text-xs text-[#C0B8AF] mt-3">Playing as a guest. Your session won't be saved.</p>
     </div>
   </div>
 </section>
@@ -516,7 +520,7 @@
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,20,10,0.1)] border border-[#E2D9CE] p-8">
       <h2 class="font-serif text-3xl font-medium text-deep mb-1">Create account</h2>
-      <p class="text-sm text-[#9A9A9A] mb-8">Create one shared account — you'll both use it to track your games.</p>
+      <p class="text-sm text-[#9A9A9A] mb-8">Create one shared account. You'll both use it to track your games.</p>
 
       <div class="space-y-4 mb-2">
         <input id="register-email" type="email" placeholder="Email address" autocomplete="email"
@@ -567,12 +571,12 @@
 
       <div class="space-y-5 mb-6">
         <div>
-          <label class="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-2" for="input-p1">Partner 1 — your name</label>
+          <label class="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-2" for="input-p1">Partner 1: your name</label>
           <input id="input-p1" type="text" placeholder="e.g. Alex" maxlength="20" autocomplete="off"
             class="w-full px-4 py-3 bg-cream border-[1.5px] border-[#E2D9CE] rounded-xl text-sm text-deep outline-none transition-colors focus:border-deep focus:bg-white placeholder-[#C0B8AF]">
         </div>
         <div>
-          <label class="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-2" for="input-p2">Partner 2 — their name</label>
+          <label class="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-2" for="input-p2">Partner 2: their name</label>
           <input id="input-p2" type="text" placeholder="e.g. Jamie" maxlength="20" autocomplete="off"
             class="w-full px-4 py-3 bg-cream border-[1.5px] border-[#E2D9CE] rounded-xl text-sm text-deep outline-none transition-colors focus:border-deep focus:bg-white placeholder-[#C0B8AF]">
         </div>
@@ -602,7 +606,7 @@
 
       <div class="h-px bg-[#E2D9CE] my-6"></div>
 
-      <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-3">Rounds <span class="normal-case font-normal text-[#9A9A9A]">— each round ~5 min</span></p>
+      <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-3">Rounds <span class="normal-case font-normal text-[#9A9A9A]">· each round ~5 min</span></p>
       <div class="grid grid-cols-3 gap-2 mb-6">
         <button class="rounds-btn py-3 px-2 rounded-xl border-[1.5px] border-[#E2D9CE] text-center cursor-pointer" data-rounds="2" onclick="selectRounds(2)">
           <div class="font-semibold text-deep text-sm">2 Rounds</div>
@@ -641,7 +645,7 @@
               🌶️ Spicy Questions
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#EECEC9;color:#9E5047;">Adults</span>
             </div>
-            <div class="text-[11px] text-[#9A9A9A] mt-0.5">Intimate questions about your relationship — tasteful but personal. Best with a partner you're comfortable with.</div>
+            <div class="text-[11px] text-[#9A9A9A] mt-0.5">Intimate questions about your relationship: tasteful but personal. Best with a partner you're comfortable with.</div>
           </div>
           <div class="relative ml-4 flex-shrink-0 w-11 h-6 rounded-full" id="toggle-spicy-track" style="background:#D1C9BE; transition: background 0.2s;">
             <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm" id="toggle-spicy-knob" style="transition: transform 0.18s ease;"></div>
@@ -665,7 +669,8 @@
 <!-- COIN FLIP                                       -->
 <!-- ═══════════════════════════════════════════════ -->
 <section id="screen-coinflip" class="screen">
-  <div class="min-h-screen hero-gradient flex flex-col items-center justify-center px-5 text-center">
+  <div class="min-h-screen hero-gradient flex flex-col items-center justify-center px-5 text-center relative">
+    <button onclick="backToSetup()" class="absolute top-5 right-5 text-white/30 hover:text-white/70 text-xs cursor-pointer transition-colors">← Setup</button>
     <div class="text-white/30 font-serif text-xl mb-16">♡ Closer</div>
 
     <div id="coin" class="w-20 h-20 rounded-full bg-gold shadow-[0_8px_32px_rgba(191,148,71,0.5)] flex items-center justify-center text-white text-4xl mb-10">
@@ -689,7 +694,8 @@
 <!-- ROUND INTRO                                     -->
 <!-- ═══════════════════════════════════════════════ -->
 <section id="screen-round-intro" class="screen">
-  <div class="min-h-screen bg-cream flex flex-col items-center justify-center px-5 text-center">
+  <div class="min-h-screen bg-cream flex flex-col items-center justify-center px-5 text-center relative">
+    <button onclick="backToSetup()" class="absolute top-5 right-5 text-[#9A9A9A] hover:text-deep text-xs cursor-pointer transition-colors">← Setup</button>
     <span id="round-intro-num" class="inline-block bg-rose/15 text-rose text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6">Round 1 of 2</span>
     <!-- Fix 10: role swap announcement — populated by app.js, hidden on round 1 -->
     <div id="round-intro-role-swap" style="display:none;" class="bg-deep text-white text-sm font-semibold px-5 py-3 rounded-xl mb-5 max-w-sm text-center leading-snug"></div>
@@ -700,7 +706,7 @@
     <div class="bg-white border border-[#E2D9CE] rounded-2xl p-6 max-w-sm mb-10 text-left space-y-3">
       <div class="flex items-start gap-3 text-sm text-[#5A5A5A]">
         <div class="w-1.5 h-1.5 rounded-full bg-rose flex-shrink-0 mt-[6px]"></div>
-        The subject answers honestly — no changing after locking
+        The subject answers honestly, no changing after locking
       </div>
       <div class="flex items-start gap-3 text-sm text-[#5A5A5A]">
         <div class="w-1.5 h-1.5 rounded-full bg-rose flex-shrink-0 mt-[6px]"></div>
@@ -730,7 +736,10 @@
       <div class="pt-6 pb-4">
         <div class="flex justify-between items-center mb-2">
           <span id="subject-label" class="text-xs font-bold uppercase tracking-[0.08em] text-[#9A9A9A]">Your turn to answer</span>
-          <span id="subject-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 5</span>
+          <div class="flex items-center gap-4">
+            <span id="subject-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 5</span>
+            <button onclick="quitGame()" class="text-[10px] text-[#C0B8AF] hover:text-[#9A9A9A] cursor-pointer transition-colors">Quit</button>
+          </div>
         </div>
         <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
           <div id="subject-progress-bar" class="h-full bg-deep rounded-full progress-fill" style="width:0%"></div>
@@ -772,7 +781,8 @@
 <!-- HANDOFF                                         -->
 <!-- ═══════════════════════════════════════════════ -->
 <section id="screen-handoff" class="screen">
-  <div class="min-h-screen hero-gradient flex flex-col items-center justify-center px-5 text-center">
+  <div class="min-h-screen hero-gradient flex flex-col items-center justify-center px-5 text-center relative">
+    <button onclick="quitGame()" class="absolute top-5 right-5 text-white/25 hover:text-white/60 text-xs cursor-pointer transition-colors">Quit</button>
     <div class="handoff-icon text-5xl mb-8">📱</div>
     <p id="handoff-locked" class="font-serif text-3xl font-medium text-white mb-3">Alex's answers are locked.</p>
     <p id="handoff-pass" class="text-white/50 text-base mb-14">Pass the device to Jamie.</p>
@@ -791,7 +801,10 @@
     <div class="pt-6 pb-4">
       <div class="flex justify-between items-center mb-2">
         <span id="guesser-label" class="text-xs font-bold uppercase tracking-[0.08em] text-[#9A9A9A]">What would they choose?</span>
-        <span id="guesser-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 5</span>
+        <div class="flex items-center gap-4">
+          <span id="guesser-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 5</span>
+          <button onclick="quitGame()" class="text-[10px] text-[#C0B8AF] hover:text-[#9A9A9A] cursor-pointer transition-colors">Quit</button>
+        </div>
       </div>
       <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
         <div id="guesser-progress-bar" class="h-full bg-rose rounded-full progress-fill" style="width:0%"></div>
@@ -833,6 +846,7 @@
         <div class="font-serif text-gold text-xl font-bold leading-tight" id="reveal-p2-score">0</div>
       </div>
     </div>
+    <button onclick="quitGame()" class="text-white/25 hover:text-white/60 text-xs cursor-pointer transition-colors">Quit</button>
   </div>
 
   <div class="max-w-xl mx-auto px-5 pt-5 pb-10">
@@ -871,7 +885,8 @@
 <!-- ROUND SUMMARY                                   -->
 <!-- ═══════════════════════════════════════════════ -->
 <section id="screen-round-summary" class="screen bg-cream">
-  <div class="min-h-screen flex flex-col items-center justify-center px-5 text-center py-12">
+  <div class="min-h-screen flex flex-col items-center justify-center px-5 text-center py-12 relative">
+    <button onclick="quitGame()" class="absolute top-5 right-5 text-[#C0B8AF] hover:text-[#9A9A9A] text-xs cursor-pointer transition-colors">Quit game</button>
     <h2 id="summary-heading" class="font-serif text-4xl font-medium text-deep mb-2">Round 1 Complete</h2>
     <p id="summary-match-stat" class="text-[#5A5A5A] text-base mb-8">3 of 5 matched</p>
 
@@ -997,7 +1012,7 @@
       <!-- Fix 24: trend sparkline (hidden until ≥3 sessions exist) -->
       <div id="lb-sparkline-wrap" class="hidden bg-white rounded-2xl border border-[#E2D9CE] p-5 mb-4">
         <div class="flex items-center justify-between mb-3">
-          <span class="text-xs font-semibold uppercase tracking-[0.08em] text-[#9A9A9A]">Last 5 Games — Compat %</span>
+          <span class="text-xs font-semibold uppercase tracking-[0.08em] text-[#9A9A9A]">Last 5 Games · Compat %</span>
           <span id="lb-sparkline-trend" class="text-xs font-medium"></span>
         </div>
         <div id="lb-sparkline-svg-wrap"></div>
@@ -1041,9 +1056,13 @@
       userInfo.style.display = 'none';
     }
     showScreen('screen-setup');
+    // P2: Pre-fill names from last session so returning couples don't retype
+    const p1El = document.getElementById('input-p1');
+    const p2El = document.getElementById('input-p2');
+    if (p1El && !p1El.value) p1El.value = localStorage.getItem('closer-p1') || '';
+    if (p2El && !p2El.value) p2El.value = localStorage.getItem('closer-p2') || '';
     setTimeout(() => {
-      const el = document.getElementById('input-p1');
-      if (el) el.focus();
+      if (p1El) p1El.focus();
     }, 50);
   }
 
