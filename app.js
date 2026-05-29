@@ -703,20 +703,52 @@ function getCompatLabel(pct) {
   return 'Lots of room to learn each other.';
 }
 
-// Fix 21: share result via Web Share API with clipboard fallback
+// Share card: show branded overlay → user screenshots or taps Share
 function shareResult() {
-  const allResults = state.roundResults.flat();
-  const matchCount = allResults.filter(r => r.matched).length;
+  const allResults     = state.roundResults.flat();
+  const matchCount     = allResults.filter(r => r.matched).length;
   const totalQuestions = state.totalRounds * state.questionsPerRound;
-  const compatPct = Math.round((matchCount / totalQuestions) * 100);
+  const compatPct      = Math.round((matchCount / totalQuestions) * 100);
+
+  const nameEl  = document.getElementById('sc-names');
+  const pctEl   = document.getElementById('sc-pct');
+  const labelEl = document.getElementById('sc-label');
+  const statsEl = document.getElementById('sc-stats');
+
+  if (nameEl)  nameEl.textContent  = `${state.p1Name} & ${state.p2Name}`;
+  if (pctEl)   pctEl.textContent   = `${compatPct}%`;
+  if (labelEl) labelEl.textContent = getCompatLabel(compatPct);
+  if (statsEl) {
+    const badges = [];
+    if (state.speedRound)   badges.push('⚡ Speed');
+    if (state.spicyEnabled) badges.push('🌶 Spicy');
+    const badgePart = badges.length ? ` · ${badges.join(' · ')}` : '';
+    statsEl.textContent = `${matchCount}/${totalQuestions} matched · ${state.maxStreak}x streak${badgePart}`;
+  }
+
+  const overlay = document.getElementById('share-card-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+}
+
+function closeShareCard() {
+  const overlay = document.getElementById('share-card-overlay');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+function nativeShare() {
+  const allResults     = state.roundResults.flat();
+  const matchCount     = allResults.filter(r => r.matched).length;
+  const totalQuestions = state.totalRounds * state.questionsPerRound;
+  const compatPct      = Math.round((matchCount / totalQuestions) * 100);
   const text = COPY[state.gameType].shareText(state.p1Name, state.p2Name, matchCount, totalQuestions, compatPct);
+  const url  = 'https://closergame.netlify.app';
 
   if (navigator.share) {
-    navigator.share({ text }).catch(() => {});
+    navigator.share({ title: 'Closer', text, url }).catch(() => {});
   } else {
-    navigator.clipboard.writeText(text).then(() => {
+    navigator.clipboard.writeText(`${text}\n${url}`).then(() => {
       const btn = document.getElementById('btn-share');
-      if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = 'Share Result'; }, 2000); }
+      if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = 'Share'; }, 2000); }
     }).catch(() => {});
   }
 }
