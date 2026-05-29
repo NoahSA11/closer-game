@@ -336,7 +336,7 @@
     <!-- Bottom wave -->
     <div class="absolute bottom-0 left-0 right-0">
       <svg viewBox="0 0 1440 80" fill="none" preserveAspectRatio="none" class="w-full h-16">
-        <path d="M0 80L1440 80L1440 40C1200 80 960 0 720 40C480 80 240 0 0 40L0 80Z" fill="#FAF7F2"/>
+        <path d="M0 80L1440 80L1440 40C1200 80 960 0 720 40C480 80 240 0 0 40L0 80Z" fill="#F4F6F4"/>
       </svg>
     </div>
   </div>
@@ -344,98 +344,80 @@
   <!-- HOW IT WORKS -->
   <section id="how" class="bg-cream py-24 px-6">
     <div class="max-w-5xl mx-auto text-center">
-      <p class="text-rose text-xs font-bold uppercase tracking-[0.15em] mb-4">Simple to learn, surprising every time</p>
       <h2 class="font-serif text-4xl md:text-5xl font-medium text-deep mb-4">How it works</h2>
-      <p class="text-[#5A5A5A] mb-16 max-w-lg mx-auto">Two rounds. Ten questions. Real answers from your real partner.</p>
+      <p class="text-[#5A5A5A] mb-16 max-w-lg mx-auto">Set up in 60 seconds. Answers lock before anyone peeks. Everything reveals at once.</p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
         <!-- Connector line (desktop) -->
         <div class="hidden md:block absolute top-12 left-[22%] right-[22%] h-px bg-gradient-to-r from-[#E2D9CE] via-rose/30 to-[#E2D9CE]"></div>
 
-        <div class="bg-white rounded-2xl p-8 shadow-[0_4px_24px_rgba(30,20,10,0.07)] border border-[#E2D9CE] relative">
+        <div class="bg-white rounded-2xl p-8 border border-[#E2D9CE] relative">
           <div class="w-12 h-12 rounded-full bg-deep flex items-center justify-center mx-auto mb-5">
             <span class="font-serif text-gold font-bold text-lg">1</span>
           </div>
           <h3 class="font-semibold text-deep mb-3">Set up in 60 seconds</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">Enter both names, pick Competitive or Cooperative. The game randomly picks who's in the hot seat first.</p>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Enter both names, pick your mode. The game randomly picks who answers first.</p>
         </div>
 
-        <div class="bg-white rounded-2xl p-8 shadow-[0_4px_24px_rgba(30,20,10,0.07)] border border-[#E2D9CE] relative">
+        <div class="bg-white rounded-2xl p-8 border border-[#E2D9CE] relative">
           <div class="w-12 h-12 rounded-full bg-rose flex items-center justify-center mx-auto mb-5">
             <span class="font-serif text-white font-bold text-lg">2</span>
           </div>
-          <h3 class="font-semibold text-deep mb-3">Answer about yourself</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">One partner answers 5 questions honestly. Their answers lock, completely hidden from the other.</p>
+          <h3 class="font-semibold text-deep mb-3">Answer honestly</h3>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">One person answers 5 questions about themselves. Answers lock, completely hidden. Then the other person guesses.</p>
         </div>
 
-        <div class="bg-white rounded-2xl p-8 shadow-[0_4px_24px_rgba(30,20,10,0.07)] border border-[#E2D9CE] relative">
+        <div class="bg-white rounded-2xl p-8 border border-[#E2D9CE] relative">
           <div class="w-12 h-12 rounded-full bg-gold flex items-center justify-center mx-auto mb-5">
             <span class="font-serif text-white font-bold text-lg">3</span>
           </div>
           <h3 class="font-semibold text-deep mb-3">Reveal together</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">Both answers show side by side. Matches earn points. Misses spark conversations. Round 2 flips everything.</p>
+          <p class="text-sm text-[#5A5A5A] leading-relaxed">Both answers show side by side. Matches earn points. Misses spark conversations. Roles flip next round.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- FEATURES -->
+  <!-- FEATURES — bento layout: 2 big + 4 small, no icon repetition -->
   <section id="features" class="bg-[#F2EBE0] py-24 px-6">
     <div class="max-w-5xl mx-auto">
-      <div class="text-center mb-16">
-        <p class="text-rose text-xs font-bold uppercase tracking-[0.15em] mb-4">Built for real couples</p>
-        <h2 class="font-serif text-4xl md:text-5xl font-medium text-deep">Not your average quiz app</h2>
+      <div class="text-center mb-14">
+        <h2 class="font-serif text-4xl md:text-5xl font-medium text-deep">Not your average quiz</h2>
+        <p class="text-[#5A5A5A] mt-4 max-w-md mx-auto">Built around real answers, not trivia. Every session is different.</p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
-        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
-          <div class="w-10 h-10 rounded-xl bg-deep/10 flex items-center justify-center mb-5">
-            <svg class="w-5 h-5 text-deep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-          </div>
-          <h3 class="font-semibold text-deep mb-2">15–20 minutes</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">Designed to fit your week. After dinner, on the couch, before bed. Short enough to actually do it.</p>
+      <!-- Two feature spotlights -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+        <div class="bg-white rounded-2xl p-8 border border-[#E2D9CE]">
+          <div class="text-deep/20 font-serif text-5xl font-bold leading-none mb-5">15</div>
+          <h3 class="font-semibold text-deep text-lg mb-2">15–20 minutes</h3>
+          <p class="text-[#5A5A5A] leading-relaxed">Designed to fit your week. After dinner, on the couch, before bed. Short enough to actually finish.</p>
         </div>
-
-        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
-          <div class="w-10 h-10 rounded-xl bg-rose/10 flex items-center justify-center mb-5">
-            <svg class="w-5 h-5 text-rose" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <h3 class="font-semibold text-deep mb-2">Your real answers</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">You set the correct answer by answering for yourself. It's personalized to your relationship, not generic quiz logic.</p>
+        <div class="bg-white rounded-2xl p-8 border border-[#E2D9CE]">
+          <div class="text-rose/20 font-serif text-5xl font-bold leading-none mb-5">You</div>
+          <h3 class="font-semibold text-deep text-lg mb-2">Your real answers</h3>
+          <p class="text-[#5A5A5A] leading-relaxed">You set the correct answer by responding for yourself. It's personalized to your specific relationship, not stock quiz logic.</p>
         </div>
+      </div>
 
-        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
-          <div class="w-10 h-10 rounded-xl bg-gold/20 flex items-center justify-center mb-5">
-            <svg class="w-5 h-5 text-gold-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          </div>
-          <h3 class="font-semibold text-deep mb-2">Balanced for both</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">Neither partner has a built-in advantage. Each round you switch roles: subject and guesser swap every time.</p>
+      <!-- Four supporting details -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="bg-white rounded-xl p-5 border border-[#E2D9CE]">
+          <div class="font-semibold text-deep text-sm mb-1.5">Balanced for both</div>
+          <div class="text-xs text-[#5A5A5A] leading-relaxed">Roles swap every round. No one has a built-in advantage.</div>
         </div>
-
-        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
-          <div class="w-10 h-10 rounded-xl bg-deep/10 flex items-center justify-center mb-5">
-            <svg class="w-5 h-5 text-deep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-          </div>
-          <h3 class="font-semibold text-deep mb-2">5 categories, 45+ questions</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">Daily Life, Early Days, Big Dreams, Family, and Just for Fun. New questions every session, randomly drawn.</p>
+        <div class="bg-white rounded-xl p-5 border border-[#E2D9CE]">
+          <div class="font-semibold text-deep text-sm mb-1.5">100+ questions</div>
+          <div class="text-xs text-[#5A5A5A] leading-relaxed">Couples and Friends banks. New draw every session.</div>
         </div>
-
-        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
-          <div class="w-10 h-10 rounded-xl bg-rose/10 flex items-center justify-center mb-5">
-            <svg class="w-5 h-5 text-rose" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-          </div>
-          <h3 class="font-semibold text-deep mb-2">Two modes</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">Choose Competitive (someone wins) or Cooperative (shared connection score). Pick fresh every session based on the mood.</p>
+        <div class="bg-white rounded-xl p-5 border border-[#E2D9CE]">
+          <div class="font-semibold text-deep text-sm mb-1.5">Two modes</div>
+          <div class="text-xs text-[#5A5A5A] leading-relaxed">Competitive or Cooperative. Pick based on the mood.</div>
         </div>
-
-        <div class="bg-white rounded-2xl p-7 border border-[#E2D9CE] hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default">
-          <div class="w-10 h-10 rounded-xl bg-gold/20 flex items-center justify-center mb-5">
-            <svg class="w-5 h-5 text-gold-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-          </div>
-          <h3 class="font-semibold text-deep mb-2">One device, no downloads</h3>
-          <p class="text-sm text-[#5A5A5A] leading-relaxed">Pass the phone between turns. No app store, no account, no setup. Open the browser and play.</p>
+        <div class="bg-white rounded-xl p-5 border border-[#E2D9CE]">
+          <div class="font-semibold text-deep text-sm mb-1.5">No downloads</div>
+          <div class="text-xs text-[#5A5A5A] leading-relaxed">One device, pass between turns. Open a browser and play.</div>
         </div>
-
       </div>
     </div>
   </section>
