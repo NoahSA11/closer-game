@@ -379,24 +379,56 @@ function showSubjectQuestion() {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
     btn.innerHTML = `<span style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:#F2EBE0;color:#5A5A5A;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700">${String.fromCharCode(65 + idx)}</span><span style="flex:1">${opt}</span>`;
-    btn.onclick = () => lockSubjectAnswer(idx, btn, container);
+    btn.onclick = () => selectSubjectAnswer(idx, container);
     container.appendChild(btn);
   });
 
+  // Reset confirm state for this question
+  _pendingSubjectIdx = -1;
+  _pendingSubjectContainer = container;
+  const confirmWrap = document.getElementById('subject-confirm-wrap');
+  if (confirmWrap) confirmWrap.classList.add('hidden');
+
   if (isSpeedRound()) {
     startSpeedTimer('subject-speed-timer', 'subject-timer-ring', 'subject-timer-num', () => {
-      const btns = container.querySelectorAll('.option-btn:not([disabled])');
-      if (btns.length) {
-        // Fix 16: random pick on timeout — avoids systematic option-A bias
-        const randIdx = Math.floor(Math.random() * btns.length);
-        const originalIdx = Array.from(container.querySelectorAll('.option-btn')).indexOf(btns[randIdx]);
-        lockSubjectAnswer(originalIdx, btns[randIdx], container);
+      // Lock whatever is selected, or pick random if nothing yet selected
+      if (_pendingSubjectIdx >= 0) {
+        lockSubjectAnswer(_pendingSubjectIdx, null, container);
+      } else {
+        const btns = container.querySelectorAll('.option-btn:not([disabled])');
+        if (btns.length) {
+          // Fix 16: random pick on timeout — avoids systematic option-A bias
+          const randIdx = Math.floor(Math.random() * btns.length);
+          const originalIdx = Array.from(container.querySelectorAll('.option-btn')).indexOf(btns[randIdx]);
+          lockSubjectAnswer(originalIdx, null, container);
+        }
       }
     });
   }
 }
 
-function lockSubjectAnswer(idx, btn, container) {
+let _pendingSubjectIdx = -1;
+let _pendingSubjectContainer = null;
+
+function selectSubjectAnswer(idx, container) {
+  _pendingSubjectIdx = idx;
+  _pendingSubjectContainer = container;
+  container.querySelectorAll('.option-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  const confirmWrap = document.getElementById('subject-confirm-wrap');
+  if (confirmWrap) confirmWrap.classList.remove('hidden');
+}
+
+function confirmSubjectAnswer() {
+  if (_pendingSubjectIdx < 0 || !_pendingSubjectContainer) return;
+  const wrap = document.getElementById('subject-confirm-wrap');
+  if (wrap) wrap.classList.add('hidden');
+  lockSubjectAnswer(_pendingSubjectIdx, null, _pendingSubjectContainer);
+  _pendingSubjectIdx = -1;
+}
+
+function lockSubjectAnswer(idx, _btn, container) {
   clearSpeedTimer();
   container.querySelectorAll('.option-btn').forEach((b, i) => {
     b.disabled = true;
