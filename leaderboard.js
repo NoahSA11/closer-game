@@ -4,7 +4,18 @@
 // ─── Main entry (called from showLeaderboard in index.html inline script) ──
 
 async function renderLeaderboard() {
+  const loading = document.getElementById('lb-loading');
+  const statsRow = document.getElementById('lb-stats-row');
+  const tableWrap = document.getElementById('lb-table-wrap');
+  if (loading)   { loading.classList.remove('hidden'); }
+  if (statsRow)  { statsRow.style.opacity = '0.4'; }
+  if (tableWrap) { tableWrap.style.opacity = '0.4'; }
+
   const sessions = await loadGameHistory();
+
+  if (loading)   { loading.classList.add('hidden'); }
+  if (statsRow)  { statsRow.style.opacity = ''; }
+  if (tableWrap) { tableWrap.style.opacity = ''; }
 
   const tbody   = document.getElementById('lb-tbody');
   const table   = document.getElementById('lb-table');

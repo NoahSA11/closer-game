@@ -137,11 +137,17 @@
     }
 
     /* Reveal cards */
+    @keyframes cardReveal {
+      from { opacity: 0; transform: scale(0.94) translateY(6px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
     .reveal-card {
       border: 2px solid #E2D9CE; border-radius: 14px;
       padding: 16px 14px; background: white; min-height: 90px;
       transition: border-color 0.35s, background 0.35s;
+      opacity: 0;
     }
+    .reveal-card.revealed { animation: cardReveal 0.4s ease forwards; }
     .reveal-card.match { border-color: #2D6E4E; background: #EBF5EF; }
     .reveal-card.miss { border-color: #D4A5A0; background: #F9EEEC; }
 
@@ -1064,6 +1070,8 @@
       <p id="sc-label" class="font-serif text-white/85 text-lg font-medium italic leading-snug max-w-[200px] mb-5"></p>
       <!-- Stats row -->
       <div id="sc-stats" class="text-white/35 text-xs leading-relaxed"></div>
+      <!-- Challenge hook -->
+      <p id="sc-challenge" class="text-white/50 text-xs font-semibold mt-3 tracking-wide"></p>
     </div>
 
     <!-- URL watermark -->
@@ -1100,6 +1108,10 @@
     <div class="w-full max-w-2xl">
       <h2 class="font-serif text-3xl font-medium text-deep mb-2">Your History</h2>
       <p class="text-sm text-[#9A9A9A] mb-8">Every game you've played together.</p>
+      <div id="lb-loading" class="hidden flex flex-col items-center py-16 gap-3">
+        <div class="w-8 h-8 rounded-full border-2 border-deep border-t-transparent animate-spin"></div>
+        <p class="text-xs text-[#9A9A9A]">Loading sessions…</p>
+      </div>
 
       <!-- Summary stats -->
       <div class="grid grid-cols-3 gap-4 mb-8" id="lb-stats-row">

@@ -737,6 +737,13 @@ function shareResult() {
     statsEl.textContent = `${matchCount}/${totalQuestions} matched · ${state.maxStreak}x streak${badgePart}`;
   }
 
+  const challengeEl = document.getElementById('sc-challenge');
+  if (challengeEl) {
+    challengeEl.textContent = compatPct >= 80
+      ? `Think you know your partner this well? 👀`
+      : `Think you can beat ${compatPct}%?`;
+  }
+
   const overlay = document.getElementById('share-card-overlay');
   if (overlay) overlay.classList.remove('hidden');
 }

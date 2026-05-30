@@ -102,6 +102,36 @@ const QUESTION_BANK = {
           "Let it go if it's not that serious",
           "Write or think through my thoughts before talking"
         ]
+      },
+      {
+        id: 'dl11',
+        text: "The gift you'd most want but would never actually ask for:",
+        options: [
+          "A full day with no responsibilities and no guilt",
+          "Someone to handle all the admin of my life for a week",
+          "An experience — a trip, a meal, something memorable",
+          "Something they thought of themselves, totally unprompted"
+        ]
+      },
+      {
+        id: 'dl12',
+        text: "When you're avoiding something you need to do, your go-to distraction is:",
+        options: [
+          "My phone — endless scrolling",
+          "Cleaning or tidying something",
+          "Food — I snack my way through procrastination",
+          "Starting a different task so it at least feels productive"
+        ]
+      },
+      {
+        id: 'dl13',
+        text: "The thing that most often throws off your whole day:",
+        options: [
+          "A bad night of sleep",
+          "Feeling behind from the start",
+          "A tense interaction with someone",
+          "Skipping a workout or routine I rely on"
+        ]
       }
     ]
   },
@@ -207,6 +237,26 @@ const QUESTION_BANK = {
           "A sharp observation about real life",
           "Physical comedy or someone's reaction",
           "When someone's laughing so hard it gets me laughing"
+        ]
+      },
+      {
+        id: 'fn11',
+        text: "If we had a completely unplanned day together — no phones, no agenda — your first instinct would be:",
+        options: [
+          "Drive somewhere with no destination in mind",
+          "Cook or make something together",
+          "Find a spot outside and just be",
+          "Make it a proper lazy day — movies, blankets, nowhere to be"
+        ]
+      },
+      {
+        id: 'fn12',
+        text: "The thing about yourself that most people would be surprised to learn:",
+        options: [
+          "I'm much more sensitive than I let on",
+          "I have a hidden competitive streak",
+          "I've done something most people haven't",
+          "I genuinely enjoy something usually seen as uncool or boring"
         ]
       }
     ]
@@ -379,6 +429,26 @@ const QUESTION_BANK = {
           "Deeply healthy — physically and mentally",
           "Building something meaningful and lasting",
           "Present and grounded — less anxious, more at peace"
+        ]
+      },
+      {
+        id: 'dr9',
+        text: "The thing on your 'someday' list that's been there the longest:",
+        options: [
+          "A trip or place I've always meant to go",
+          "Learning something I keep starting and stopping",
+          "A creative project I've been meaning to begin",
+          "A life change I keep telling myself I'll make"
+        ]
+      },
+      {
+        id: 'dr10',
+        text: "If you could be truly exceptional at one thing — known for it — it would be:",
+        options: [
+          "Something creative: writing, music, art, design",
+          "Something physical: a sport, craft, or skill",
+          "Something intellectual: building, solving, innovating",
+          "Something relational: leading people, helping, connecting"
         ]
       }
     ]
