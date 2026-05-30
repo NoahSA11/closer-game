@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Closer — The Connection Game</title>
+  <meta name="description" content="Closer is the couples and friends game that reveals how well you really know each other. Answer privately, guess, then reveal — one question at a time.">
+  <meta property="og:title" content="Closer — How well do you really know each other?">
+  <meta property="og:description" content="The game that reveals how well you really know each other. Answer questions about yourself. Your partner guesses. See who knows who.">
+  <meta property="og:image" content="https://closergame.netlify.app/og-image.svg">
+  <meta property="og:url" content="https://closergame.netlify.app">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Closer — How well do you really know each other?">
+  <meta name="twitter:description" content="The game that reveals how well you really know each other. Answer · Guess · Reveal.">
+  <meta name="twitter:image" content="https://closergame.netlify.app/og-image.svg">
+  <meta name="theme-color" content="#1E3A2F">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -213,7 +224,7 @@
       <a href="#how" class="text-sm text-[#5A5A5A] hover:text-deep transition-colors">How it Works</a>
       <a href="#features" class="text-sm text-[#5A5A5A] hover:text-deep transition-colors">For Couples</a>
     </div>
-    <button onclick="launchFromLanding('couples')" class="bg-deep text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-deep-mid transition-all hover:-translate-y-0.5 cursor-pointer">
+    <button onclick="launchFromLanding()" class="bg-deep text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-deep-mid transition-all hover:-translate-y-0.5 cursor-pointer">
       Play Now
     </button>
   </nav>
@@ -250,14 +261,8 @@
         </p>
         <div class="fade-slide-up-4 flex flex-col items-start gap-3">
           <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <button onclick="launchFromLanding('couples')" class="group bg-rose text-white font-semibold text-base px-8 py-4 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer flex items-center gap-3">
-              Play as a Couple
-              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </button>
-            <button onclick="launchFromLanding('friends')" class="group bg-white/10 border border-white/25 text-white font-semibold text-base px-8 py-4 rounded-full hover:bg-white/20 transition-all duration-200 hover:-translate-y-1 cursor-pointer flex items-center gap-3">
-              Play with Friends
+            <button onclick="launchFromLanding()" class="group bg-rose text-white font-semibold text-base px-8 py-4 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/30 cursor-pointer flex items-center gap-3">
+              Play Game
               <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
@@ -434,14 +439,8 @@
       </h2>
       <p class="text-white/50 mb-10 text-base">No account needed. Takes 60 seconds to start.</p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-      <button onclick="launchFromLanding('couples')" class="group bg-rose text-white font-semibold text-lg px-10 py-5 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/40 cursor-pointer inline-flex items-center gap-3">
-        Play as a Couple
-        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </button>
-      <button onclick="launchFromLanding('friends')" class="group bg-white/10 border border-white/30 text-white font-semibold text-lg px-10 py-5 rounded-full hover:bg-white/20 transition-all duration-200 hover:-translate-y-1 cursor-pointer inline-flex items-center gap-3">
-        Play with Friends
+      <button onclick="launchFromLanding()" class="group bg-rose text-white font-semibold text-lg px-10 py-5 rounded-full hover:bg-rose-dark transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-rose/40 cursor-pointer inline-flex items-center gap-3">
+        Play Game
         <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
@@ -680,6 +679,38 @@
             <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm" id="toggle-spicy-knob" style="transition: transform 0.18s ease;"></div>
           </div>
           <input type="checkbox" id="toggle-spicy" class="sr-only">
+        </div>
+      </div>
+
+      <div class="h-px bg-[#E2D9CE] my-6"></div>
+
+      <!-- Custom Questions -->
+      <div class="mb-6">
+        <button type="button" onclick="toggleCustomQSection()" class="w-full flex items-center justify-between cursor-pointer hover:text-deep transition-colors group">
+          <span class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] group-hover:text-deep transition-colors">✏️ Your Questions <span class="normal-case font-normal text-[#9A9A9A]">· optional</span></span>
+          <span id="custom-q-chevron" class="text-[#9A9A9A] text-base transition-transform duration-200">▾</span>
+        </button>
+        <div id="custom-q-section" class="hidden mt-3">
+          <div id="custom-q-list" class="space-y-2 mb-3"></div>
+          <div class="bg-cream rounded-xl border border-[#E2D9CE] p-4">
+            <p class="text-xs text-[#9A9A9A] mb-3">Add a question with 2–4 answer options. Your questions will mix into the game.</p>
+            <input id="cq-text" type="text" maxlength="120" placeholder="Your question here…" autocomplete="off"
+              class="w-full px-3 py-2.5 bg-white border-[1.5px] border-[#E2D9CE] rounded-lg text-sm text-deep outline-none focus:border-deep mb-2 placeholder-[#C0B8AF]">
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <input id="cq-a" type="text" maxlength="60" placeholder="Option A" autocomplete="off"
+                class="px-3 py-2 bg-white border-[1.5px] border-[#E2D9CE] rounded-lg text-xs text-deep outline-none focus:border-deep placeholder-[#C0B8AF]">
+              <input id="cq-b" type="text" maxlength="60" placeholder="Option B" autocomplete="off"
+                class="px-3 py-2 bg-white border-[1.5px] border-[#E2D9CE] rounded-lg text-xs text-deep outline-none focus:border-deep placeholder-[#C0B8AF]">
+              <input id="cq-c" type="text" maxlength="60" placeholder="Option C (optional)" autocomplete="off"
+                class="px-3 py-2 bg-white border-[1.5px] border-[#E2D9CE] rounded-lg text-xs text-deep outline-none focus:border-deep placeholder-[#C0B8AF]">
+              <input id="cq-d" type="text" maxlength="60" placeholder="Option D (optional)" autocomplete="off"
+                class="px-3 py-2 bg-white border-[1.5px] border-[#E2D9CE] rounded-lg text-xs text-deep outline-none focus:border-deep placeholder-[#C0B8AF]">
+            </div>
+            <button type="button" onclick="addCustomQuestion()" class="w-full py-2.5 bg-deep text-white text-xs font-semibold rounded-lg hover:bg-deep-mid transition-colors cursor-pointer">
+              Add Question
+            </button>
+            <p id="cq-error" class="text-rose text-xs mt-2 hidden"></p>
+          </div>
         </div>
       </div>
 
@@ -953,10 +984,12 @@
     <p class="font-serif text-2xl font-medium text-white mb-4" id="end-compat-label">Strong connection — a few surprises.</p>
 
     <!-- Compat ring -->
-    <div class="w-32 h-32 rounded-full border-2 border-white/15 bg-white/5 flex flex-col items-center justify-center mb-5">
+    <div class="w-32 h-32 rounded-full border-2 border-white/15 bg-white/5 flex flex-col items-center justify-center mb-3">
       <div class="font-serif text-gold text-4xl font-bold leading-none" id="end-compat-pct">70%</div>
       <div class="text-white/30 text-[10px] uppercase tracking-[0.1em] mt-1">match rate</div>
     </div>
+    <p class="text-white/30 text-xs mb-2">Questions matched ÷ total &nbsp;·&nbsp; 70%+ is a strong connection</p>
+    <p class="font-serif italic text-white/25 text-sm mb-5">Made for couples, by someone in one.</p>
 
     <h2 class="font-serif text-2xl font-medium text-white/60 mb-10" id="end-winner">Alex wins this round.</h2>
 
@@ -1207,7 +1240,7 @@
   // Called by all "Start" / "Play Now" buttons on the landing screen
   // Named differently from app.js startGame() to avoid global scope collision
   function launchFromLanding(type) {
-    if (type && typeof state !== 'undefined') state.gameType = type || 'couples';
+    if (typeof state !== 'undefined') state.gameType = type || 'couples';
     if (getCurrentUser()) {
       initSetup();
     } else {
@@ -1231,6 +1264,75 @@
     }
     showScreen('screen-leaderboard');
     renderLeaderboard();
+  }
+
+  // ── Custom Questions ──────────────────────────────────────────
+  const CQ_KEY = 'closer-custom-questions';
+
+  function loadCustomQuestions() {
+    try { return JSON.parse(localStorage.getItem(CQ_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveCustomQuestions(qs) {
+    localStorage.setItem(CQ_KEY, JSON.stringify(qs));
+  }
+
+  function toggleCustomQSection() {
+    const sec = document.getElementById('custom-q-section');
+    const chev = document.getElementById('custom-q-chevron');
+    const isOpen = !sec.classList.contains('hidden');
+    sec.classList.toggle('hidden', isOpen);
+    chev.style.transform = isOpen ? '' : 'rotate(180deg)';
+    if (!isOpen) renderCustomQList();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function renderCustomQList() {
+    const qs = loadCustomQuestions();
+    const el = document.getElementById('custom-q-list');
+    if (!el) return;
+    if (!qs.length) {
+      el.innerHTML = '<p class="text-xs text-[#9A9A9A] italic mb-2">No custom questions yet — add one below.</p>';
+      return;
+    }
+    el.innerHTML = qs.map((q, i) => `
+      <div class="flex items-start gap-2 p-3 bg-cream rounded-lg border border-[#E2D9CE]">
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-deep leading-snug">${escapeHtml(q.text)}</p>
+          <p class="text-[10px] text-[#9A9A9A] mt-0.5">${q.options.length} options</p>
+        </div>
+        <button onclick="deleteCustomQuestion(${i})" class="text-[#C4756A] hover:text-rose text-xs flex-shrink-0 cursor-pointer font-bold leading-none mt-0.5">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function addCustomQuestion() {
+    const text = document.getElementById('cq-text').value.trim();
+    const opts = ['cq-a','cq-b','cq-c','cq-d']
+      .map(id => document.getElementById(id).value.trim())
+      .filter(Boolean);
+    const errEl = document.getElementById('cq-error');
+    errEl.classList.add('hidden');
+
+    if (!text) { errEl.textContent = 'Enter a question.'; errEl.classList.remove('hidden'); return; }
+    if (opts.length < 2) { errEl.textContent = 'Add at least 2 options.'; errEl.classList.remove('hidden'); return; }
+
+    const qs = loadCustomQuestions();
+    qs.push({ id: 'cq_' + Date.now(), text, options: opts });
+    saveCustomQuestions(qs);
+    ['cq-text','cq-a','cq-b','cq-c','cq-d'].forEach(id => { document.getElementById(id).value = ''; });
+    renderCustomQList();
+  }
+
+  function deleteCustomQuestion(i) {
+    const qs = loadCustomQuestions();
+    qs.splice(i, 1);
+    saveCustomQuestions(qs);
+    renderCustomQList();
   }
 
   // Reveal banner helper (called from app.js via DOM manipulation)

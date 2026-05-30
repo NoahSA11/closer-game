@@ -104,16 +104,27 @@ function selectQuestions() {
   // Build active category list (adult category opt-in regardless of game type)
   const cats = Object.keys(bank).filter(k => k !== spicyKey);
   if (state.spicyEnabled && bank[spicyKey]) cats.push(spicyKey);
+
+  // Inject custom questions from localStorage
+  const _customQs = (() => { try { return JSON.parse(localStorage.getItem('closer-custom-questions')) || []; } catch { return []; } })();
+  if (_customQs.length > 0) cats.push('custom');
+
   state.questionsPerRound = cats.length;
 
   // Shuffle each category independently
   const byCat = {};
   cats.forEach(cat => {
-    byCat[cat] = shuffle(
-      bank[cat].questions.map(q => ({
-        ...q, category: cat, categoryLabel: bank[cat].label
-      }))
-    );
+    if (cat === 'custom') {
+      byCat['custom'] = shuffle(_customQs.map(q => ({
+        ...q, category: 'custom', categoryLabel: 'Your Questions'
+      })));
+    } else {
+      byCat[cat] = shuffle(
+        bank[cat].questions.map(q => ({
+          ...q, category: cat, categoryLabel: bank[cat].label
+        }))
+      );
+    }
   });
 
   // One question per category per round; wrap if more rounds than questions
