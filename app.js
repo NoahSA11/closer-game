@@ -237,6 +237,7 @@ function toggleOption(id) {
 // ─── Setup ────────────────────────────────────────────────────
 
 function startGame() {
+  clearGameSession();
   // Read game type from setup toggle
   const typeEl = document.querySelector('input[name="game-type"]:checked');
   state.gameType = typeEl ? typeEl.value : 'couples';
@@ -273,6 +274,7 @@ function startGame() {
 // P1: Escape paths — quit mid-game with confirmation
 function quitGame() {
   if (!confirm("Quit this game? Your current progress won't be saved.")) return;
+  clearGameSession();
   clearSpeedTimer();
   showScreen('screen-setup');
   // Restore current names so the couple doesn't retype
@@ -355,6 +357,7 @@ function showRoundIntro() {
 // ─── Subject Phase ────────────────────────────────────────────
 
 function showSubjectQuestion() {
+  saveGameSession();
   showScreen('screen-subject');
   clearSpeedTimer();
   const q = getCurrentQuestions()[state.currentQIndex];
@@ -655,6 +658,7 @@ function goToNextRound() {
 // ─── End Screen ───────────────────────────────────────────────
 
 function showEndScreen() {
+  clearGameSession();
   showScreen('screen-end');
 
   const allResults = state.roundResults.flat();
@@ -813,13 +817,75 @@ function selectMode(mode) {
   });
 }
 
+// ─── Session persistence (mid-game refresh recovery) ──────────
+
+const GAME_SESSION_KEY = 'closer-game-session';
+
+function saveGameSession() {
+  try {
+    sessionStorage.setItem(GAME_SESSION_KEY, JSON.stringify({
+      p1Name: state.p1Name, p2Name: state.p2Name,
+      gameType: state.gameType, mode: state.mode,
+      round: state.round, totalRounds: state.totalRounds,
+      subjectPlayer: state.subjectPlayer,
+      roundQuestions: state.roundQuestions,
+      questionsPerRound: state.questionsPerRound,
+      subjectAnswers: state.subjectAnswers,
+      guesserAnswers: state.guesserAnswers,
+      currentQIndex: state.currentQIndex,
+      scores: state.scores,
+      streak: state.streak, maxStreak: state.maxStreak,
+      roundResults: state.roundResults,
+      speedRound: state.speedRound,
+      spicyEnabled: state.spicyEnabled
+    }));
+  } catch {}
+}
+
+function clearGameSession() {
+  sessionStorage.removeItem(GAME_SESSION_KEY);
+}
+
+function checkSavedSession() {
+  try {
+    const raw = sessionStorage.getItem(GAME_SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (s && s.p1Name && s.roundQuestions && s.round <= s.totalRounds) return s;
+    return null;
+  } catch { return null; }
+}
+
+function resumeGame() {
+  const saved = checkSavedSession();
+  if (!saved) return;
+  Object.assign(state, saved);
+  const bar = document.getElementById('resume-bar');
+  if (bar) bar.classList.add('hidden');
+  showRoundIntro();
+}
+
+function dismissResume() {
+  clearGameSession();
+  const bar = document.getElementById('resume-bar');
+  if (bar) bar.classList.add('hidden');
+}
+
 // ─── Init ─────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // initAuth() restores existing session + auto-parses OAuth hash on return from Google
   const user = await initAuth();
+
+  // Check for a mid-game session regardless of auth state
+  const saved = checkSavedSession();
+  if (saved) {
+    const bar = document.getElementById('resume-bar');
+    const desc = document.getElementById('resume-bar-desc');
+    if (desc) desc.textContent = `${saved.p1Name} & ${saved.p2Name} · Round ${saved.round} of ${saved.totalRounds}`;
+    if (bar) bar.classList.remove('hidden');
+  }
+
   if (user) {
-    // Returning from Google OAuth redirect, or already signed in — skip to setup
     initSetup();
   } else {
     showScreen('screen-landing');

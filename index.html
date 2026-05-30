@@ -15,6 +15,8 @@
   <meta name="twitter:description" content="The game that reveals how well you really know each other. Answer · Guess · Reveal.">
   <meta name="twitter:image" content="https://closergame.netlify.app/og-image.svg">
   <meta name="theme-color" content="#1E3A2F">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/og-image.svg">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -211,6 +213,18 @@
 
 <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
+<!-- Resume bar — shown when a mid-game session is found in sessionStorage -->
+<div id="resume-bar" class="hidden fixed bottom-0 left-0 right-0 z-[200] bg-deep border-t border-white/10 px-5 py-4 flex items-center justify-between gap-4" style="backdrop-filter:blur(8px);">
+  <div class="min-w-0">
+    <p class="text-white text-sm font-semibold leading-tight">Game in progress</p>
+    <p id="resume-bar-desc" class="text-white/50 text-xs mt-0.5 truncate"></p>
+  </div>
+  <div class="flex items-center gap-2 flex-shrink-0">
+    <button onclick="resumeGame()" class="bg-rose text-white text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-rose-dark transition-colors">Resume</button>
+    <button onclick="dismissResume()" class="text-white/40 hover:text-white/70 text-base cursor-pointer transition-colors leading-none">✕</button>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════ -->
 <!-- LANDING PAGE                                    -->
 <!-- ═══════════════════════════════════════════════ -->
@@ -275,7 +289,13 @@
             </button>
           </div>
           <div class="flex items-center gap-4 mt-1">
-            <span class="text-white/40 text-xs">No account required. Takes 60 seconds to start.</span>
+            <span class="text-white/40 text-xs">No account required · One device · 15–20 min</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse"></span>
+            <span class="text-white/30 text-xs">1,200+ questions answered by real couples</span>
+          </div>
+          <div class="flex items-center gap-4 mt-1 hidden">
             <a href="#how" class="text-white/50 hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
@@ -1165,6 +1185,8 @@
 <script src="app.js"></script>
 <script>
   function initSetup() {
+    const resumeBar = document.getElementById('resume-bar');
+    if (resumeBar) resumeBar.classList.add('hidden');
     // Show/hide signed-in user indicator
     const user = getCurrentUser();
     const userInfo = document.getElementById('setup-user-info');
