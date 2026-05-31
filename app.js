@@ -597,11 +597,13 @@ function showRevealQuestion() {
       cardSubject.classList.add('match');
       cardGuesser.classList.add('match');
       setRevealBanner(true, pts, state.streak >= 3);
+      if (navigator.vibrate) navigator.vibrate(state.streak >= 3 ? [60, 40, 60, 40, 60] : [50, 30, 50]);
     } else {
       state.streak = 0;
       cardSubject.classList.add('miss');
       cardGuesser.classList.add('miss');
       setRevealBanner(false, 0, false);
+      if (navigator.vibrate) navigator.vibrate(30);
     }
 
     // Store in current round's results array

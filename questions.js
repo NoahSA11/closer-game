@@ -132,6 +132,56 @@ const QUESTION_BANK = {
           "A tense interaction with someone",
           "Skipping a workout or routine I rely on"
         ]
+      },
+      {
+        id: 'dl14',
+        text: "Your honest energy level on a typical weeknight by 9pm:",
+        options: [
+          "Completely done — I'm checked out",
+          "Low but functional — still in the game",
+          "Depends on the day — no pattern",
+          "Second wind — I actually get more alert"
+        ]
+      },
+      {
+        id: 'dl15',
+        text: "Someone cancels plans last minute. Your real reaction:",
+        options: [
+          "Secretly relieved — I needed the night",
+          "Annoyed, then fine — it stings for a minute",
+          "Disappointed and it takes a while to shake",
+          "Immediately make new plans — I hate gaps"
+        ]
+      },
+      {
+        id: 'dl16',
+        text: "Your honest relationship with being on time:",
+        options: [
+          "I'm always early — lateness genuinely stresses me",
+          "Right on time, almost every time",
+          "A few minutes late is fine — I've accepted it",
+          "Chronically late and I'm working on it"
+        ]
+      },
+      {
+        id: 'dl17',
+        text: "When you're sick, what you want most is:",
+        options: [
+          "To be left alone to rest and recover in peace",
+          "Someone to check in and take care of me",
+          "Distraction — shows, food, something to watch",
+          "To push through and not let it slow me down"
+        ]
+      },
+      {
+        id: 'dl18',
+        text: "You suddenly have 10 free unexpected minutes. You:",
+        options: [
+          "Scroll my phone — easiest default",
+          "Do a quick task I've been putting off",
+          "Close my eyes and actually rest",
+          "Message someone I've been meaning to reach"
+        ]
       }
     ]
   },
@@ -257,6 +307,56 @@ const QUESTION_BANK = {
           "I have a hidden competitive streak",
           "I've done something most people haven't",
           "I genuinely enjoy something usually seen as uncool or boring"
+        ]
+      },
+      {
+        id: 'fn13',
+        text: "Your go-to comfort order when you want food and don't want to think:",
+        options: [
+          "Something warm and filling — pasta, soup, rice",
+          "Fast food — I know exactly what I want",
+          "Whatever I have at home — I make do",
+          "I call somewhere I love and order my usual"
+        ]
+      },
+      {
+        id: 'fn14',
+        text: "How you actually use social media day-to-day:",
+        options: [
+          "Scroll passively — mostly watching, rarely posting",
+          "Post regularly — I like sharing what's happening",
+          "Barely use it — I check in occasionally and leave",
+          "Use it for specific things: news, humor, or people I follow"
+        ]
+      },
+      {
+        id: 'fn15',
+        text: "Your approach to giving gifts:",
+        options: [
+          "I spend a lot of time finding the perfect thing",
+          "I go practical — something they'll actually use",
+          "I prefer experiences over objects",
+          "I ask what they want — I'd rather get it right"
+        ]
+      },
+      {
+        id: 'fn16',
+        text: "If you could wake up tomorrow fluent in one language or skilled at one instrument:",
+        options: [
+          "Spanish — practical and beautiful",
+          "Piano — I've always wanted it",
+          "Mandarin — the scale of it appeals to me",
+          "Guitar — I'd play it constantly"
+        ]
+      },
+      {
+        id: 'fn17',
+        text: "Your natural relationship with mornings:",
+        options: [
+          "I'm a morning person — I like the quiet before the day",
+          "I function in the morning but don't love it",
+          "I need time before I'm fully human",
+          "I avoid mornings whenever possible"
         ]
       }
     ]
@@ -450,6 +550,36 @@ const QUESTION_BANK = {
           "Something intellectual: building, solving, innovating",
           "Something relational: leading people, helping, connecting"
         ]
+      },
+      {
+        id: 'dr11',
+        text: "If you had to live in a different city for one year starting next month, you'd choose:",
+        options: [
+          "Somewhere in Europe — history, food, pace of life",
+          "A major US city I've always been curious about",
+          "Somewhere warm and completely different from what I know",
+          "A smaller, slower place — I'd want the quiet"
+        ]
+      },
+      {
+        id: 'dr12',
+        text: "If you could go back and study something completely different, it would be:",
+        options: [
+          "Something creative — design, film, writing, music",
+          "Something I could build a business from",
+          "Something with more direct human impact — medicine, law, teaching",
+          "I'd study the same thing — I believe in the path I took"
+        ]
+      },
+      {
+        id: 'dr13',
+        text: "Your retirement vision, if you're being honest:",
+        options: [
+          "Somewhere warm and slow — travel, no schedule",
+          "Still doing something meaningful — I'd go crazy idle",
+          "Close to family — that's what it's all really for",
+          "I haven't thought that far ahead yet"
+        ]
       }
     ]
   },
@@ -535,6 +665,26 @@ const QUESTION_BANK = {
           "Emotional intelligence and empathy",
           "Work ethic and resilience",
           "Strong values and knowing what they stand for"
+        ]
+      },
+      {
+        id: 'fm9',
+        text: "Your honest preference for holidays:",
+        options: [
+          "Big gathering — the more family, the better",
+          "Small and quiet — just the people who matter most",
+          "Travel — I'd rather skip the traditions and go somewhere",
+          "Flexible — I adapt to whatever the year calls for"
+        ]
+      },
+      {
+        id: 'fm10',
+        text: "Your instinct on finances in a long-term partnership:",
+        options: [
+          "Fully merge — one pot, shared decisions",
+          "Mostly shared with personal spending money",
+          "Mostly separate with shared costs split",
+          "Entirely separate — financial independence is important to me"
         ]
       }
     ]

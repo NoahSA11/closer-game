@@ -1,0 +1,15 @@
+# Capacitor native project folders — generated via `npx cap add ios/android`
+# Large (~100MB each), rebuilt from source
+ios/
+android/
+
+# Node modules
+node_modules/
+
+# Environment / secrets
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
