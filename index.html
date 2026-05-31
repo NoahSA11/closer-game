@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Closer — The Connection Game</title>
   <meta name="description" content="Closer is the couples and friends game that reveals how well you really know each other. Answer privately, guess, then reveal — one question at a time.">
   <meta property="og:title" content="Closer — How well do you really know each other?">
@@ -207,6 +207,13 @@
       .fade-slide-up, .fade-slide-up-1, .fade-slide-up-2,
       .fade-slide-up-3, .fade-slide-up-4 { animation: none; opacity: 1; transform: none; }
     }
+    /* iOS Safari zooms on input focus if font-size < 16px. Force 16px, scale visually. */
+    @supports (-webkit-touch-callout: none) {
+      input[type="text"] { font-size: 16px !important; }
+    }
+    /* Safe area padding for iPhone notch / Dynamic Island / home indicator */
+    body { padding-bottom: env(safe-area-inset-bottom); }
+    #screen-landing { padding-bottom: env(safe-area-inset-bottom); }
   </style>
 </head>
 <body class="bg-cream font-sans">
@@ -222,6 +229,47 @@
   <div class="flex items-center gap-2 flex-shrink-0">
     <button onclick="resumeGame()" class="bg-rose text-white text-xs font-bold px-4 py-2 rounded-full cursor-pointer hover:bg-rose-dark transition-colors">Resume</button>
     <button onclick="dismissResume()" class="text-white/40 hover:text-white/70 text-base cursor-pointer transition-colors leading-none">✕</button>
+  </div>
+</div>
+
+<!-- PWA Install Banner — Android: auto-prompt. iOS: manual share instructions. -->
+<div id="pwa-banner" class="hidden fixed bottom-0 left-0 right-0 z-[150]" style="padding-bottom: env(safe-area-inset-bottom);">
+  <div class="mx-4 mb-4 bg-deep rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4 flex items-center gap-4">
+    <div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+    </div>
+    <div class="flex-1 min-w-0">
+      <p class="text-white text-sm font-semibold leading-tight">Add Closer to Home Screen</p>
+      <p id="pwa-banner-sub" class="text-white/55 text-xs mt-0.5 leading-snug">Play instantly — no app store needed</p>
+    </div>
+    <button id="pwa-install-btn" class="hidden bg-gold text-white text-xs font-bold px-4 py-2 rounded-full cursor-pointer flex-shrink-0 hover:opacity-90 transition-opacity">Install</button>
+    <button onclick="dismissPWABanner()" class="text-white/40 hover:text-white/70 text-lg cursor-pointer transition-colors flex-shrink-0 leading-none ml-1">✕</button>
+  </div>
+</div>
+
+<!-- iOS Install Instructions tooltip (shown inside banner on iOS Safari) -->
+<div id="pwa-ios-tip" class="hidden fixed bottom-0 left-0 right-0 z-[150]" style="padding-bottom: env(safe-area-inset-bottom);">
+  <div class="mx-4 mb-4 bg-deep rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-4">
+    <div class="flex items-start justify-between mb-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        </div>
+        <div>
+          <p class="text-white text-sm font-semibold">Install Closer on iPhone</p>
+          <p class="text-white/50 text-xs">Two taps — lives on your home screen</p>
+        </div>
+      </div>
+      <button onclick="dismissPWABanner()" class="text-white/40 hover:text-white/70 text-lg cursor-pointer transition-colors leading-none">✕</button>
+    </div>
+    <div class="flex items-center gap-3 bg-white/8 rounded-xl px-3 py-2.5">
+      <span class="text-white/70 text-xs leading-snug">
+        Tap <span class="inline-flex items-center gap-1 bg-white/15 rounded px-1.5 py-0.5 mx-0.5 font-semibold">
+          <svg width="11" height="13" viewBox="0 0 11 13" fill="white" class="inline"><path d="M5.5 0L3 2.5h2V8h1V2.5h2L5.5 0z"/><rect x="0" y="9" width="11" height="1" rx=".5" fill="white"/><rect x="0" y="11" width="11" height="1" rx=".5" fill="white"/></svg>
+          Share
+        </span> then <span class="bg-white/15 rounded px-1.5 py-0.5 mx-0.5 font-semibold">"Add to Home Screen"</span>
+      </span>
+    </div>
   </div>
 </div>
 
@@ -1389,6 +1437,67 @@
     renderCustomQList();
   }
 
+  // ─── PWA Install Banner ───────────────────────────────────────────────────
+
+  const PWA_DISMISS_KEY = 'closer-pwa-dismissed';
+  let _deferredInstallPrompt = null;
+
+  function _pwaAlreadyDismissed() {
+    const ts = localStorage.getItem(PWA_DISMISS_KEY);
+    if (!ts) return false;
+    // Re-show after 7 days
+    return (Date.now() - parseInt(ts)) < 7 * 24 * 60 * 60 * 1000;
+  }
+
+  function _isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  function dismissPWABanner() {
+    document.getElementById('pwa-banner').classList.add('hidden');
+    document.getElementById('pwa-ios-tip').classList.add('hidden');
+    localStorage.setItem(PWA_DISMISS_KEY, Date.now().toString());
+  }
+
+  // Android/Chrome: capture deferred prompt before browser shows default
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _deferredInstallPrompt = e;
+    if (_isStandalone() || _pwaAlreadyDismissed()) return;
+    const banner = document.getElementById('pwa-banner');
+    const btn = document.getElementById('pwa-install-btn');
+    btn.classList.remove('hidden');
+    btn.addEventListener('click', async () => {
+      _deferredInstallPrompt.prompt();
+      const { outcome } = await _deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        localStorage.setItem(PWA_DISMISS_KEY, Date.now().toString());
+      }
+      banner.classList.add('hidden');
+      _deferredInstallPrompt = null;
+    });
+    banner.classList.remove('hidden');
+  });
+
+  // iOS Safari: no beforeinstallprompt — detect manually and show instructions
+  (function initIOSBanner() {
+    if (_isStandalone() || _pwaAlreadyDismissed()) return;
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isIOS && isSafari) {
+      // Delay slightly so it doesn't flash on every page load
+      setTimeout(() => {
+        document.getElementById('pwa-ios-tip').classList.remove('hidden');
+      }, 3000);
+    }
+  })();
+
+  // Hide banners automatically if app launched in standalone mode (already installed)
+  if (_isStandalone()) {
+    document.getElementById('pwa-banner').classList.add('hidden');
+    document.getElementById('pwa-ios-tip').classList.add('hidden');
+  }
+
   // Reveal banner helper (called from app.js via DOM manipulation)
   function setRevealBanner(matched, pts, isStreak) {
     const banner = document.getElementById('reveal-result-banner');
@@ -1405,6 +1514,17 @@
       banner.querySelector('.result-pts').textContent = '0 pts';
     }
     banner.style.display = 'flex';
+  }
+</script>
+
+<script>
+  // Service Worker registration — enables offline play and instant repeat loads
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {
+        // SW registration failing is non-fatal — game still works online
+      });
+    });
   }
 </script>
 </body>
