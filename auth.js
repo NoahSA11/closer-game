@@ -92,7 +92,9 @@ async function loadGameHistory() {
   const { data, error } = await sb
     .from('game_sessions')
     .select('*')
-    .order('played_at', { ascending: false });
+    .eq('user_id', currentUser.id)   // explicit filter (defense-in-depth alongside RLS)
+    .order('played_at', { ascending: false })
+    .limit(50);                       // cap at 50 sessions — prevents unbounded fetches
   if (error) { console.error('[Closer] load failed:', error.message); return []; }
   return data ?? [];
 }
