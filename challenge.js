@@ -583,24 +583,25 @@ async function chInitMyChallengesButton() {
 
   let found = [];
 
-  // Auth-based: any device the user is signed into
-  const user = getCurrentUser();
+  // Always check localStorage first (same device, any auth state)
+  try {
+    found = Object.keys(localStorage)
+      .filter(k => k.startsWith('closer-created-'))
+      .map(k => ({ id: k.replace('closer-created-', '') }));
+  } catch {}
+
+  // Auth-based: works on any device — use getUser() for guaranteed fresh session
+  const { data: { user } } = await sb.auth.getUser();
   if (user) {
     const { data } = await sb.from('challenges')
       .select('id, creator_name, created_at')
       .eq('creator_id', user.id)
       .order('created_at', { ascending: false })
       .limit(10);
-    found = data ?? [];
-  }
-
-  // Fallback: localStorage keys (anon creators, same device)
-  if (!found.length) {
-    try {
-      found = Object.keys(localStorage)
-        .filter(k => k.startsWith('closer-created-'))
-        .map(k => ({ id: k.replace('closer-created-', '') }));
-    } catch {}
+    if (data?.length) {
+      const existingIds = new Set(found.map(c => c.id));
+      data.forEach(c => { if (!existingIds.has(c.id)) found.push(c); });
+    }
   }
 
   if (!found.length) return;
@@ -610,6 +611,11 @@ async function chInitMyChallengesButton() {
   label.textContent = n === 1 ? '📊 See how friends did' : `📊 My Challenges (${n})`;
   btn.classList.remove('hidden');
 }
+
+// Re-run when auth state changes (handles session restore after redirect)
+sb.auth.onAuthStateChange((event) => {
+  if (event === 'SIGNED_IN') chInitMyChallengesButton();
+});
 
 async function chOpenMyChallenge() {
   if (!chMyChallengesList.length) return;
