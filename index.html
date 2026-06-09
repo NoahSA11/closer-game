@@ -1794,6 +1794,49 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CHALLENGE: CREATOR DASHBOARD                    -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-challenge-creator" class="screen bg-cream">
+  <div class="min-h-screen flex flex-col items-center px-5 py-12">
+    <div class="w-full max-w-md">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-deep flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+          </div>
+          <span class="font-serif text-xl font-medium text-deep">Closer</span>
+        </div>
+        <span class="text-[10px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-3 py-1.5 rounded-full">Creator View</span>
+      </div>
+
+      <h2 id="ccd-title" class="font-serif text-3xl font-medium text-deep mb-1">Your Challenge</h2>
+      <p id="ccd-summary" class="text-sm text-[#9A9A9A] mb-6">Loading…</p>
+
+      <!-- Leaderboard -->
+      <div class="bg-white rounded-2xl border border-[#E2D9CE] p-6 mb-5">
+        <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-3">Leaderboard</p>
+        <div id="ccd-leaderboard"></div>
+      </div>
+
+      <!-- Per-question accuracy -->
+      <div id="ccd-questions-wrap" class="bg-white rounded-2xl border border-[#E2D9CE] p-6 mb-6">
+        <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-1">Question Accuracy</p>
+        <p class="text-xs text-[#9A9A9A] mb-4">How many friends guessed each answer correctly</p>
+        <div id="ccd-questions"></div>
+      </div>
+
+      <button onclick="showScreen('screen-landing')"
+        class="w-full bg-deep text-white font-semibold py-4 rounded-full hover:bg-deep-mid transition-all cursor-pointer text-sm">
+        ← Back to Closer
+      </button>
+
+    </div>
+  </div>
+</section>
+
 <script>
   // Service Worker registration — enables offline play and instant repeat loads
   if ('serviceWorker' in navigator) {

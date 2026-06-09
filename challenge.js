@@ -110,7 +110,14 @@ async function challengeRouteOnLoad() {
     chPlay.qIndex     = 0;
     chPlay.playerName = '';
     chPlay.result     = null;
-    chShowPlayIntro();
+    // Creator revisiting their own challenge → show dashboard instead of play flow
+    let isCreator = false;
+    try { isCreator = !!localStorage.getItem('closer-created-' + id); } catch {}
+    if (isCreator) {
+      await chShowCreatorDashboard();
+    } else {
+      chShowPlayIntro();
+    }
   } catch {
     showScreen('screen-challenge-error');
   }
@@ -219,6 +226,8 @@ function chShowShare() {
   document.getElementById('cs-link').value = url;
   document.getElementById('cs-q-count').textContent = chCreate.questions.length;
   document.getElementById('cs-copy-btn').textContent = 'Copy Link';
+  // Flag this device as the creator so revisiting the link shows the dashboard
+  try { localStorage.setItem('closer-created-' + chCreate.id, '1'); } catch {}
 }
 
 function challengeCopyLink() {
@@ -385,6 +394,78 @@ function chRenderBreakdown() {
           ${!correct ? `<br><span class="text-xs px-3 py-1.5 rounded-lg font-medium bg-[#FFF8EC] text-[#92600A] inline-block mt-1.5">They chose: ${correctText}</span>` : ''}
         </div>
       </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Creator dashboard ─────────────────────────────────────────
+async function chShowCreatorDashboard() {
+  showScreen('screen-challenge-creator');
+  const c = chPlay.challenge;
+  document.getElementById('ccd-title').textContent = c.creator_name + "'s Challenge";
+  document.getElementById('ccd-summary').textContent = 'Loading…';
+
+  const { data } = await sb.from('challenge_responses')
+    .select('player_name, score, total, pct, guesses, played_at')
+    .eq('challenge_id', c.id)
+    .order('score', { ascending: false })
+    .limit(100);
+
+  const responses = data ?? [];
+  const n = responses.length;
+  const avg = n ? Math.round(responses.reduce((s, r) => s + r.pct, 0) / n) : 0;
+  document.getElementById('ccd-summary').textContent =
+    `${n} ${n === 1 ? 'friend' : 'friends'} played · avg ${avg}%`;
+
+  chRenderCreatorLeaderboard(responses);
+  chRenderCreatorQuestionStats(responses);
+}
+
+function chRenderCreatorLeaderboard(responses) {
+  const list = document.getElementById('ccd-leaderboard');
+  if (!responses.length) {
+    list.innerHTML = '<p class="text-sm text-[#9A9A9A] text-center py-4">No one has played yet — share the link!</p>';
+    return;
+  }
+  const medals = ['🥇', '🥈', '🥉'];
+  list.innerHTML = responses.map((r, i) =>
+    `<div class="flex items-center justify-between py-2.5 ${i < responses.length - 1 ? 'border-b border-[#E2D9CE]' : ''}">
+      <span class="flex items-center gap-2 text-sm text-[#5A5A5A]">
+        <span>${medals[i] || (i + 1) + '.'}</span>
+        <span>${chEsc(r.player_name)}</span>
+      </span>
+      <span class="text-sm font-semibold text-[#9A9A9A]">${r.score}/${r.total} · ${r.pct}%</span>
+    </div>`
+  ).join('');
+}
+
+function chRenderCreatorQuestionStats(responses) {
+  const wrap = document.getElementById('ccd-questions-wrap');
+  const list = document.getElementById('ccd-questions');
+  if (!responses.length) { wrap.classList.add('hidden'); return; }
+  wrap.classList.remove('hidden');
+
+  const qs      = chPlay.challenge.questions;
+  const answers = chPlay.challenge.answers;
+  const n       = responses.length;
+
+  list.innerHTML = qs.map((q, i) => {
+    const correct = responses.filter(r => Array.isArray(r.guesses) && r.guesses[i] === answers[i]).length;
+    const pct     = Math.round((correct / n) * 100);
+    const isLast  = i === qs.length - 1;
+    const good    = pct >= 60;
+    return `<div class="py-3.5 ${isLast ? '' : 'border-b border-[#F0EBE4]'}">
+      <div class="flex items-start justify-between gap-3 mb-2">
+        <div class="flex-1 min-w-0">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-[#9A9A9A] mb-0.5">${chEsc(q.categoryLabel)}</p>
+          <p class="text-sm font-medium text-deep leading-snug">${chEsc(q.text)}</p>
+        </div>
+        <span class="flex-shrink-0 text-sm font-bold ${good ? 'text-[#2D6E4E]' : 'text-[#8B4A3A]'}">${pct}%</span>
+      </div>
+      <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
+        <div class="h-full rounded-full ${good ? 'bg-[#2D6E4E]' : 'bg-[#C4756A]'}" style="width:${pct}%"></div>
+      </div>
+      <p class="text-[10px] text-[#9A9A9A] mt-1">${correct}/${n} got this right · Your answer: ${chEsc(q.options[answers[i]])}</p>
     </div>`;
   }).join('');
 }
