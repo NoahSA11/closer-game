@@ -593,6 +593,16 @@ async function chInitMyChallengesButton() {
   // Auth-based: works on any device — use getUser() for guaranteed fresh session
   const { data: { user } } = await sb.auth.getUser();
   if (user) {
+    // Silently claim any localStorage challenges not yet linked to an account
+    if (found.length) {
+      await Promise.all(found.map(c =>
+        sb.from('challenges')
+          .update({ creator_id: user.id })
+          .eq('id', c.id)
+          .is('creator_id', null)
+      ));
+    }
+
     const { data } = await sb.from('challenges')
       .select('id, creator_name, created_at')
       .eq('creator_id', user.id)
