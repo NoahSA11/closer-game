@@ -9,26 +9,28 @@ function chEsc(s) {
 
 // ── State ──────────────────────────────────────────────────────
 const chCreate = {
-  questions: [], answers: [], qIndex: 0, creatorName: '', id: null
+  questions: [], answers: [], qIndex: 0, creatorName: '', id: null,
+  pool: []  // full shuffled question pool — used for swap
 };
 const chPlay = {
   challenge: null, playerName: '', guesses: [], qIndex: 0, result: null
 };
 
 // ── Question picker ────────────────────────────────────────────
-function pickChallengeQuestions() {
+// Returns full shuffled pool (deep-cloned options so edits never mutate QUESTION_BANK)
+function buildChallengePool() {
   const pool = [];
   Object.entries(QUESTION_BANK).forEach(([key, cat]) => {
     if (key === 'spicy') return; // intimate partner questions — not appropriate for friend challenges
     cat.questions.forEach(q =>
-      pool.push({ id: q.id, text: q.text, options: q.options, categoryLabel: cat.label })
+      pool.push({ id: q.id, text: q.text, options: [...q.options], categoryLabel: cat.label })
     );
   });
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  return pool.slice(0, CHALLENGE_Q_COUNT);
+  return pool;
 }
 
 // ── Supabase helpers ───────────────────────────────────────────
@@ -126,7 +128,10 @@ async function challengeRouteOnLoad() {
 
 // ── Creation flow ──────────────────────────────────────────────
 function challengeStartCreate() {
-  chCreate.questions = pickChallengeQuestions();
+  const pool         = buildChallengePool();
+  chCreate.pool      = pool;                                                    // originals, never mutated
+  chCreate.questions = pool.slice(0, CHALLENGE_Q_COUNT)
+    .map(q => ({ ...q, options: [...q.options] }));                             // editable clones
   chCreate.answers   = new Array(CHALLENGE_Q_COUNT).fill(null);
   chCreate.qIndex    = 0;
   chCreate.id        = null;
@@ -160,21 +165,45 @@ function chRenderCreateQuestion() {
 
   document.getElementById('ch-progress-text').textContent = `${idx + 1} of ${total}`;
   document.getElementById('ch-progress-bar').style.transform = `scaleX(${(idx + 1) / total})`;
-  document.getElementById('ch-category-tag').textContent = q.categoryLabel;
-  document.getElementById('ch-q-text').textContent = q.text;
 
+  // Rebuild card: category + question text + edit pencil + swap button
+  document.getElementById('ch-question-card').innerHTML = `
+    <span class="inline-block bg-rose/15 text-rose text-[11px] font-bold uppercase tracking-[0.08em] px-3 py-1 rounded-full mb-4">${chEsc(q.categoryLabel)}</span>
+    <div class="flex items-start gap-2">
+      <p id="ch-q-text" class="font-serif text-2xl font-medium text-deep leading-snug flex-1">${chEsc(q.text)}</p>
+      <button onclick="chStartEditQuestion()" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#F0EBE4] transition-colors text-base mt-0.5" title="Edit question">✏️</button>
+    </div>
+    <button onclick="chSwapQuestion()" class="mt-3 text-xs text-[#9A9A9A] hover:text-[#C4756A] flex items-center gap-1.5 transition-colors cursor-pointer font-medium">
+      <span class="text-sm">↻</span> Try a different question
+    </button>
+  `;
+
+  // Options — absolute-positioned pencil overlays right side of each button
   const opts = document.getElementById('ch-options');
   opts.innerHTML = '';
   q.options.forEach((opt, i) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'relative';
+    wrapper.dataset.opt = i;
+
     const btn = document.createElement('button');
     const selected = chCreate.answers[idx] === i;
     btn.className = 'option-btn' + (selected ? ' selected' : '');
-    btn.innerHTML = `<span class="option-letter w-7 h-7 rounded-full bg-[#F0EBE4] text-deep text-xs font-bold flex items-center justify-center flex-shrink-0">${String.fromCharCode(65 + i)}</span><span>${opt}</span>`;
+    btn.innerHTML = `<span class="option-letter w-7 h-7 rounded-full bg-[#F0EBE4] text-deep text-xs font-bold flex items-center justify-center flex-shrink-0">${String.fromCharCode(65 + i)}</span><span class="opt-text pr-8">${chEsc(opt)}</span>`;
     btn.onclick = () => {
       chCreate.answers[idx] = i;
       chRenderCreateQuestion();
     };
-    opts.appendChild(btn);
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-white/70 hover:bg-[#F0EBE4] transition-colors text-xs z-10';
+    editBtn.title = 'Edit this answer';
+    editBtn.textContent = '✏️';
+    editBtn.onclick = (e) => { e.stopPropagation(); chStartEditOption(i); };
+
+    wrapper.appendChild(btn);
+    wrapper.appendChild(editBtn);
+    opts.appendChild(wrapper);
   });
 
   const wrap = document.getElementById('ch-confirm-wrap');
@@ -187,6 +216,79 @@ function chRenderCreateQuestion() {
   }
 
   document.getElementById('ch-create-error').classList.add('hidden');
+}
+
+// ── Challenge creation — swap / edit controls ──────────────────
+function chSwapQuestion() {
+  const activeIds = new Set(chCreate.questions.map(q => q.id));
+  const available = chCreate.pool.filter(q => !activeIds.has(q.id));
+  if (!available.length) {
+    const errEl = document.getElementById('ch-create-error');
+    errEl.textContent = 'No more questions available to swap in.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  const pick = available[Math.floor(Math.random() * available.length)];
+  chCreate.questions[chCreate.qIndex] = { ...pick, options: [...pick.options] };
+  chCreate.answers[chCreate.qIndex]   = null; // reset — new options, old index invalid
+  chRenderCreateQuestion();
+}
+
+function chStartEditQuestion() {
+  const el = document.getElementById('ch-q-text');
+  if (!el || el.tagName === 'INPUT') return; // already editing
+  const idx = chCreate.qIndex;
+  const input = document.createElement('input');
+  input.type      = 'text';
+  input.className = 'font-serif text-2xl font-medium text-deep leading-snug flex-1 border-b-2 border-[#C4756A] bg-transparent outline-none pb-1 w-full';
+  input.value     = chCreate.questions[idx].text;
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+  const restore = () => {
+    const p = document.createElement('p');
+    p.id        = 'ch-q-text';
+    p.className = 'font-serif text-2xl font-medium text-deep leading-snug flex-1';
+    p.textContent = chCreate.questions[idx].text;
+    input.replaceWith(p);
+  };
+  input.addEventListener('blur', () => {
+    const val = input.value.trim();
+    if (val) chCreate.questions[idx].text = val;
+    restore();
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { restore(); }
+  });
+}
+
+function chStartEditOption(optIdx) {
+  const idx     = chCreate.qIndex;
+  const optSpan = document.querySelector(`#ch-options [data-opt="${optIdx}"] .opt-text`);
+  if (!optSpan) return;
+  const input   = document.createElement('input');
+  input.type    = 'text';
+  input.className = 'flex-1 min-w-0 text-sm text-deep border-b border-[#C4756A] bg-transparent outline-none py-0.5 pr-8';
+  input.value   = chCreate.questions[idx].options[optIdx];
+  optSpan.replaceWith(input);
+  input.focus();
+  input.select();
+  const restore = () => {
+    const span = document.createElement('span');
+    span.className  = 'opt-text pr-8';
+    span.textContent = chCreate.questions[idx].options[optIdx];
+    input.replaceWith(span);
+  };
+  input.addEventListener('blur', () => {
+    const val = input.value.trim();
+    if (val) chCreate.questions[idx].options[optIdx] = val;
+    restore();
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { restore(); }
+  });
 }
 
 async function challengeConfirmAnswer() {
