@@ -50,7 +50,7 @@ async function chDbCreate({ creatorName, questions, answers }) {
 async function chDbLoad(id) {
   const { data, error } = await sb
     .from('challenges')
-    .select('id, creator_name, questions, answers, show_leaderboard, expires_at')
+    .select('id, creator_name, creator_id, questions, answers, show_leaderboard, expires_at')
     .eq('id', id)
     .single();
   if (error) throw error;
@@ -112,9 +112,10 @@ async function challengeRouteOnLoad() {
     chPlay.qIndex     = 0;
     chPlay.playerName = '';
     chPlay.result     = null;
-    // Creator revisiting their own challenge → show dashboard instead of play flow
-    let isCreator = false;
-    try { isCreator = !!localStorage.getItem('closer-created-' + id); } catch {}
+    // Creator detection: auth match (any device) OR localStorage flag (same device, anon)
+    const currentUser = getCurrentUser();
+    let isCreator = (currentUser && challenge.creator_id && challenge.creator_id === currentUser.id);
+    if (!isCreator) { try { isCreator = !!localStorage.getItem('closer-created-' + id); } catch {} }
     if (isCreator) {
       await chShowCreatorDashboard();
     } else {
