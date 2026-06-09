@@ -544,6 +544,15 @@
       <button onclick="showScreen('screen-landing')" class="text-sm text-[#9A9A9A] hover:text-deep transition-colors cursor-pointer">← Home</button>
     </div>
 
+    <!-- WebView warning — shown when user is inside LinkedIn, Instagram, WhatsApp, etc. -->
+    <div id="webview-warning" class="hidden w-full max-w-md mb-4 rounded-2xl p-4" style="background:#fffbeb; border:1.5px solid #fcd34d;">
+      <p class="text-sm font-semibold mb-1" style="color:#92400e;">Open in your browser to use Google Sign In</p>
+      <p class="text-xs mb-3" style="color:#b45309;">You're inside an app (like LinkedIn or Instagram). Google blocks sign-in from here. Use email/password below, or open this page in Safari or Chrome.</p>
+      <button onclick="copyGameURL()" class="text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer transition-colors" style="border:1.5px solid #fcd34d; color:#92400e; background:transparent;">
+        Copy link to open in browser →
+      </button>
+    </div>
+
     <div class="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,20,10,0.1)] border border-[#E2D9CE] p-8">
       <h2 class="font-serif text-3xl font-medium text-deep mb-1">Welcome back</h2>
       <p id="login-subtitle" class="text-sm text-[#9A9A9A] mb-8">Sign in to save every game you play together and see how you improve over time.</p>
@@ -790,6 +799,16 @@
 
       <button onclick="startGame()" class="w-full bg-deep text-white font-semibold py-4 rounded-full hover:bg-deep-mid transition-all hover:-translate-y-0.5 cursor-pointer text-base">
         Start Game →
+      </button>
+
+      <div class="flex items-center gap-3 mt-5">
+        <div class="flex-1 h-px bg-[#E2D9CE]"></div>
+        <span class="text-xs text-[#9A9A9A]">or</span>
+        <div class="flex-1 h-px bg-[#E2D9CE]"></div>
+      </div>
+
+      <button onclick="challengeStartCreate()" class="w-full mt-4 border-2 border-[#E2D9CE] text-deep font-medium py-3.5 rounded-full hover:border-deep transition-all cursor-pointer text-sm flex items-center justify-center gap-2">
+        🔗 Create a "How Well Do You Know Me?" Challenge
       </button>
     </div>
 
@@ -1245,6 +1264,7 @@
 <script src="auth.js"></script>
 <script src="leaderboard.js"></script>
 <script src="questions.js"></script>
+<script src="challenge.js"></script>
 <script src="app.js"></script>
 <script>
   function initSetup() {
@@ -1276,6 +1296,10 @@
   }
 
   async function handleGoogleSignIn() {
+    if (isWebView()) {
+      showLoginError('Google Sign In is blocked inside apps like LinkedIn or Instagram. Copy the link above to open in Safari or Chrome, or use email/password instead.');
+      return;
+    }
     try {
       await authSignInGoogle();
       // Page redirects to Google — Supabase handles the callback
@@ -1342,6 +1366,17 @@
       initSetup();
     } else {
       showScreen('screen-login');
+      const warn = document.getElementById('webview-warning');
+      if (warn) warn.classList.toggle('hidden', !isWebView());
+    }
+  }
+
+  function copyGameURL() {
+    const url = window.location.href.split('#')[0];
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => alert('Link copied! Paste it in Safari or Chrome to sign in with Google.'));
+    } else {
+      prompt('Copy this link and open it in Safari or Chrome:', url);
     }
   }
 
@@ -1516,6 +1551,242 @@
     banner.style.display = 'flex';
   }
 </script>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CHALLENGE: LOADING                              -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-challenge-loading" class="screen">
+  <div class="min-h-screen bg-cream flex flex-col items-center justify-center gap-4">
+    <div class="w-10 h-10 rounded-full border-4 border-deep border-t-transparent animate-spin"></div>
+    <p class="text-[#9A9A9A] text-sm">Loading challenge…</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CHALLENGE: ERROR                                -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-challenge-error" class="screen">
+  <div class="min-h-screen bg-cream flex flex-col items-center justify-center px-5 text-center">
+    <div class="text-5xl mb-5">😕</div>
+    <h2 class="font-serif text-3xl font-medium text-deep mb-3">Challenge not found</h2>
+    <p class="text-[#5A5A5A] mb-8 max-w-xs">This link may have expired or the challenge was removed.</p>
+    <button onclick="showScreen('screen-landing')" class="bg-deep text-white font-semibold px-8 py-4 rounded-full hover:bg-deep-mid transition-all cursor-pointer">
+      Play Closer →
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CHALLENGE: CREATE (name → questions)            -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-challenge-create" class="screen">
+  <div class="min-h-screen bg-cream flex flex-col items-center px-5 py-12">
+
+    <!-- Nav -->
+    <div class="flex items-center justify-between w-full max-w-md mb-8">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-deep flex items-center justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        </div>
+        <span class="font-serif text-xl font-medium text-deep">Closer</span>
+      </div>
+      <button onclick="showScreen('screen-setup')" class="text-sm text-[#9A9A9A] hover:text-deep transition-colors cursor-pointer">← Back</button>
+    </div>
+
+    <!-- Phase 1: Name entry -->
+    <div id="ch-name-phase" class="w-full max-w-md flex-col items-center" style="display:flex;">
+      <div class="w-full bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,20,10,0.1)] border border-[#E2D9CE] p-8">
+        <div class="text-3xl mb-4 text-center">🔗</div>
+        <h2 class="font-serif text-3xl font-medium text-deep mb-1 text-center">Create Your Challenge</h2>
+        <p class="text-sm text-[#9A9A9A] mb-8 text-center">Answer 10 questions about yourself. Share the link. See how well your friends know you.</p>
+
+        <label class="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-2">Your name</label>
+        <input id="ch-creator-name" type="text" maxlength="40" placeholder="e.g. Nehemiah"
+          autocomplete="off"
+          class="w-full px-4 py-3 bg-cream border-[1.5px] border-[#E2D9CE] rounded-xl text-sm text-deep outline-none transition-colors focus:border-deep focus:bg-white placeholder-[#C0B8AF] mb-2">
+        <div id="ch-name-error" class="text-sm text-[#C0392B] mb-2 hidden"></div>
+
+        <button onclick="challengeBeginAnswering()" class="w-full bg-deep text-white font-semibold py-4 rounded-full hover:bg-deep-mid transition-all cursor-pointer mt-3">
+          Start Answering →
+        </button>
+
+        <p class="text-center text-xs text-[#C0B8AF] mt-4">Your answers are locked before friends see them.</p>
+      </div>
+    </div>
+
+    <!-- Phase 2: Questions -->
+    <div id="ch-question-phase" class="w-full max-w-xl" style="display:none;">
+      <!-- Progress -->
+      <div class="pt-2 pb-4">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-bold uppercase tracking-[0.08em] text-[#9A9A9A]">Your answer</span>
+          <span id="ch-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 10</span>
+        </div>
+        <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
+          <div id="ch-progress-bar" class="h-full bg-deep rounded-full progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Question card -->
+      <div class="bg-white rounded-2xl shadow-[0_4px_24px_rgba(30,20,10,0.08)] border border-[#E2D9CE] p-7 mb-3">
+        <span id="ch-category-tag" class="inline-block bg-rose/15 text-rose text-[11px] font-bold uppercase tracking-[0.08em] px-3 py-1 rounded-full mb-4">Category</span>
+        <p id="ch-q-text" class="font-serif text-2xl font-medium text-deep leading-snug">Question text</p>
+      </div>
+
+      <!-- Options -->
+      <div id="ch-options" class="space-y-2.5 mb-3"></div>
+
+      <!-- Confirm -->
+      <div id="ch-confirm-wrap" class="hidden pb-10 pt-1">
+        <div id="ch-create-error" class="text-sm text-[#C0392B] mb-2 hidden"></div>
+        <button id="ch-confirm-btn" onclick="challengeConfirmAnswer()"
+          class="w-full bg-deep text-white font-semibold py-4 rounded-full hover:bg-deep-mid transition-all cursor-pointer text-base">
+          Lock In Answer →
+        </button>
+        <p class="text-center text-[11px] text-[#9A9A9A] mt-2">Tap a different option to change your mind</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CHALLENGE: SHARE                                -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-challenge-share" class="screen">
+  <div class="min-h-screen bg-cream flex flex-col items-center justify-center px-5 py-12">
+    <div class="w-full max-w-md">
+
+      <div class="text-center mb-8">
+        <div class="text-5xl mb-4">🎉</div>
+        <h2 id="cs-title" class="font-serif text-3xl font-medium text-deep mb-2">Your Challenge is Live!</h2>
+        <p class="text-[#5A5A5A] text-sm"><span id="cs-q-count">10</span> questions · Expires in 30 days</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,20,10,0.1)] border border-[#E2D9CE] p-6 mb-5">
+        <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-3">Share this link with friends</p>
+        <div class="flex gap-2">
+          <input id="cs-link" type="text" readonly
+            class="flex-1 px-3 py-2.5 bg-cream border-[1.5px] border-[#E2D9CE] rounded-xl text-xs text-deep outline-none font-mono min-w-0">
+          <button id="cs-copy-btn" onclick="challengeCopyLink()"
+            class="bg-deep text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-deep-mid transition-colors cursor-pointer flex-shrink-0">
+            Copy Link
+          </button>
+        </div>
+        <p class="text-xs text-[#9A9A9A] mt-3 leading-snug">Friends open the link on their own device and guess your answers. You'll see everyone's score on the leaderboard.</p>
+      </div>
+
+      <button onclick="showScreen('screen-setup')"
+        class="w-full border-2 border-[#E2D9CE] text-[#5A5A5A] font-medium py-3.5 rounded-full hover:border-deep hover:text-deep transition-all cursor-pointer text-sm">
+        ← Back to Game Setup
+      </button>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CHALLENGE: PLAY INTRO (friend's device)         -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-challenge-play-intro" class="screen">
+  <div class="min-h-screen hero-gradient flex flex-col items-center justify-center px-5 text-center relative">
+    <div class="text-white/20 font-serif text-xl mb-12">♡ Closer</div>
+
+    <h1 class="font-serif text-4xl md:text-5xl font-medium text-white mb-3 leading-tight">
+      How well do you know<br><em class="text-gold" id="cp-intro-creator">—</em>?
+    </h1>
+    <p class="text-white/50 text-base mb-3"><span id="cp-intro-q-count">10</span> questions · Answer what you think they'd choose</p>
+
+    <div class="w-full max-w-sm mt-8 bg-white/10 backdrop-blur rounded-2xl border border-white/20 p-6">
+      <label class="block text-white/60 text-xs font-bold uppercase tracking-wider mb-2">Your name</label>
+      <input id="cp-player-name" type="text" maxlength="40" placeholder="e.g. Nehemiah"
+        autocomplete="off"
+        class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white outline-none focus:border-white/50 placeholder-white/30 mb-2">
+      <div id="cp-name-error" class="text-rose-light text-xs mb-2 hidden"></div>
+      <button onclick="challengeStartPlay()"
+        class="w-full bg-rose text-white font-semibold py-3.5 rounded-full hover:bg-rose-dark transition-all cursor-pointer mt-2">
+        Start →
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CHALLENGE: PLAY QUESTIONS (friend guessing)     -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-challenge-play" class="screen bg-cream">
+  <div class="max-w-xl mx-auto px-5">
+
+    <!-- Header -->
+    <div class="pt-6 pb-4">
+      <div class="flex justify-between items-center mb-2">
+        <span id="cp-creator-label" class="text-xs font-bold uppercase tracking-[0.08em] text-[#9A9A9A]">What would they choose?</span>
+        <span id="cp-progress-text" class="text-xs font-semibold text-[#9A9A9A]">1 of 10</span>
+      </div>
+      <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
+        <div id="cp-progress-bar" class="h-full bg-rose rounded-full progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Question card -->
+    <div class="bg-white rounded-2xl shadow-[0_4px_24px_rgba(30,20,10,0.08)] border border-[#E2D9CE] p-7 mb-3">
+      <span id="cp-category-tag" class="inline-block bg-rose/15 text-rose text-[11px] font-bold uppercase tracking-[0.08em] px-3 py-1 rounded-full mb-4">Category</span>
+      <p class="text-xs text-[#9A9A9A] italic mb-2">Guess what they chose about themselves.</p>
+      <p id="cp-q-text" class="font-serif text-2xl font-medium text-deep leading-snug">Question text</p>
+    </div>
+
+    <!-- Options -->
+    <div id="cp-options" class="space-y-2.5 mb-3"></div>
+
+    <!-- Confirm -->
+    <div id="cp-confirm-wrap" class="hidden pb-10 pt-1">
+      <button id="cp-confirm-btn" onclick="challengeConfirmGuess()"
+        class="w-full bg-rose text-white font-semibold py-4 rounded-full hover:bg-rose-dark transition-all cursor-pointer text-base">
+        Lock In Guess →
+      </button>
+      <p class="text-center text-[11px] text-[#9A9A9A] mt-2">Tap a different option to change your mind</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CHALLENGE: RESULT + LEADERBOARD                 -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="screen-challenge-result" class="screen bg-cream">
+  <div class="min-h-screen flex flex-col items-center justify-start px-5 py-12">
+    <div class="w-full max-w-md">
+
+      <!-- Score card -->
+      <div class="bg-white rounded-2xl shadow-[0_8px_40px_rgba(30,20,10,0.1)] border border-[#E2D9CE] p-8 text-center mb-5">
+        <div id="cr-emoji" class="text-5xl mb-4">🎉</div>
+        <div id="cr-score" class="font-serif text-5xl font-bold text-deep mb-1">—</div>
+        <div class="text-[#5A5A5A] text-sm mb-2">
+          <span id="cr-pct" class="font-semibold text-deep"></span> match with
+          <span id="cr-creator" class="font-semibold text-deep"></span>
+        </div>
+        <div id="cr-rank" class="hidden inline-block bg-gold/15 text-gold-dark text-xs font-bold px-3 py-1.5 rounded-full mt-2"></div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div id="cr-leaderboard-wrap" class="bg-white rounded-2xl border border-[#E2D9CE] p-6 mb-5">
+        <p class="text-[11px] font-bold uppercase tracking-[0.08em] text-[#5A5A5A] mb-3">Leaderboard</p>
+        <div id="cr-leaderboard-list" class="divide-y divide-[#F0EBE4]"></div>
+      </div>
+
+      <!-- CTA -->
+      <button onclick="showScreen('screen-landing')"
+        class="w-full bg-deep text-white font-semibold py-4 rounded-full hover:bg-deep-mid transition-all cursor-pointer text-sm mb-3">
+        Create Your Own Challenge →
+      </button>
+      <button onclick="showScreen('screen-landing')"
+        class="w-full text-[#9A9A9A] text-sm hover:text-deep transition-colors cursor-pointer py-2">
+        ← Back to Closer
+      </button>
+
+    </div>
+  </div>
+</section>
 
 <script>
   // Service Worker registration — enables offline play and instant repeat loads

@@ -908,6 +908,9 @@ function dismissResume() {
 // ─── Init ─────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Challenge link intercept — must run before auth/setup so friends land on the right screen
+  if (await challengeRouteOnLoad()) return;
+
   const user = await initAuth();
 
   // Check for a mid-game session regardless of auth state

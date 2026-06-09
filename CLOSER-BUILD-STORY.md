@@ -46,10 +46,11 @@ Starting prompt (paraphrased):
 
 ```
 closer-game/
-├── index.html          — All 10 screens, Tailwind CDN, inline CSS, inline scripts
+├── index.html          — All screens (17 total after V6), Tailwind CDN, inline CSS, inline scripts
 ├── app.js              — Full game state, screen transitions, scoring, session logic
 ├── questions.js        — QUESTION_BANK (couples) + FRIEND_QUESTION_BANK (friends)
-├── auth.js             — Supabase client, signIn/signUp/signOut, saveGameSession, loadGameHistory
+├── auth.js             — Supabase client, signIn/signUp/signOut, saveGameSession, loadGameHistory, isWebView()
+├── challenge.js        — Async challenge mode: creation flow, play flow, Supabase helpers, URL routing
 ├── leaderboard.js      — Game history fetch + render (sparkline, stats row, loading state)
 ├── styles.css          — Legacy, mostly superseded by Tailwind inline
 ├── manifest.json       — PWA manifest (Add to Home Screen)
@@ -423,6 +424,69 @@ Hit both Netlify limits in one day after the game started being shared. Moved to
 
 ---
 
+### V6 — June 9: WebView OAuth Fix + Async Challenge Mode
+
+**Context:** Friends were getting `Error 403: disallowed_useragent` when opening the game link from LinkedIn, WhatsApp, or Instagram. These apps open links in their own embedded browser (WebView), and Google blocks OAuth from WebViews as a security policy. A second friend (Nehemiah) suggested an async challenge feature — answer questions about yourself, share a link, friends guess independently on their own devices.
+
+**Bugs fixed:**
+
+*WebView OAuth blocking (auth.js + index.html):*
+- Added `isWebView()` to `auth.js` — detects in-app browsers by User-Agent string
+- Original regex was incomplete: used `LinkedInApp` but LinkedIn's actual UA contains `[LinkedIn]` (with brackets); WhatsApp was missing entirely
+- Final regex: `/wv|FBAN|FBAV|Instagram|Snapchat|TikTok|Line\/|WhatsApp|\[LinkedIn\]/`
+- Also catches iOS WebViews via: `/(iPhone|iPod|iPad).*AppleWebKit/i && !/Safari/i`
+- `handleGoogleSignIn()` in `index.html` now guards with `isWebView()` — if detected, shows error message instead of attempting OAuth
+- WebView warning banner added above login card (hidden by default, shown via `launchFromLanding()` when WebView detected)
+- Banner includes copy-to-clipboard button so users can open in Safari/Chrome themselves
+
+**New feature — Challenge Mode (challenge.js + index.html + app.js):**
+
+*What it does:*
+- Creator answers 10 "how well do you know me?" questions → gets shareable link
+- Friends open link on their own device → guess what the creator chose → see score + leaderboard
+- No account needed for friends — fully anonymous play
+- Leaderboard shows all friends ranked by score
+
+*New file: `challenge.js` (~380 lines)*
+- `chCreate` / `chPlay` state objects — separate from main `state` object, no interference
+- `pickChallengeQuestions()` — Fisher-Yates shuffle from full question bank, **excludes `spicy` category** (intimate partner questions — inappropriate for public friend challenges)
+- `challengeRouteOnLoad()` — URL intercept: if `?c=UUID` param present, skips normal game init and loads challenge play flow directly
+- Full creation flow: name entry → 10 questions → "Finish & Create Challenge →" → share screen with copy link
+- Full play flow: player name entry → 10 guesses → submit → score + rank + leaderboard
+- XSS protection: all player-supplied names rendered via `chEsc()` before innerHTML insertion
+- Rank calculation: two parallel Supabase COUNT queries (players with higher score = rank - 1)
+
+*`index.html` additions:*
+- "Create Challenge" button on setup screen (below "Start Game →")
+- 7 new screens: `screen-challenge-loading`, `screen-challenge-error`, `screen-challenge-create`, `screen-challenge-share`, `screen-challenge-play-intro`, `screen-challenge-play`, `screen-challenge-result`
+- Script tag for `challenge.js` added before `app.js`
+
+*`app.js` change (3 lines):*
+- `challengeRouteOnLoad()` called at top of `DOMContentLoaded` — if returns `true`, normal init is skipped entirely
+
+*Supabase migration applied (`closer_challenge_mode`):*
+- `challenges` table: `id`, `creator_id` (nullable FK), `creator_name`, `questions` (jsonb), `answers` (jsonb), `show_leaderboard`, `created_at`, `expires_at` (30-day TTL)
+- `challenge_responses` table: `id`, `challenge_id` (FK), `player_name`, `guesses` (jsonb), `score`, `total`, `pct`, `played_at`
+- RLS: public SELECT on non-expired challenges, public INSERT (anonymous guests allowed), creator-only DELETE; public INSERT on responses, leaderboard-gated SELECT on responses
+- Index: `idx_challenge_responses_challenge_id` on `(challenge_id, score DESC)`
+
+**File structure change:**
+```
+closer-game/
+├── challenge.js        ← NEW — async challenge mode (creation + play + Supabase helpers)
+├── auth.js             ← UPDATED — isWebView() + chEsc() added
+├── index.html          ← UPDATED — WebView banner, 7 new screens, challenge entry button
+├── app.js              ← UPDATED — challenge routing intercept (3 lines)
+```
+
+**Known constraints preserved:**
+- No framework, no build step, vanilla JS only
+- All Tailwind dynamic values use inline `style` — Tailwind CDN can't process runtime class strings
+- `challenge.js` uses global `sb`, `getCurrentUser`, `QUESTION_BANK`, `showScreen` from other scripts — load order is `supabase CDN → auth.js → questions.js → challenge.js → app.js`
+- Supabase anon key is a publishable key — safe to commit
+
+---
+
 ## For the Next LLM
 
 If you're picking this up from another Claude session or a different model entirely:
@@ -437,5 +501,13 @@ If you're picking this up from another Claude session or a different model entir
 - The Supabase anon key in `auth.js` is a publishable key — safe to commit.
 - Haptic patterns: match = `[50,30,50]`, streak = `[60,40,60,40,60]`, miss = `30`.
 - Service worker cache name is `closer-v2` — bump this string to force cache refresh.
+
+**Challenge mode specifics (added V6):**
+- `challenge.js` is a separate file — state is in `chCreate` / `chPlay`, no overlap with main `state` object
+- Friends do NOT need accounts — Supabase RLS allows anonymous public INSERT/SELECT on challenge tables
+- `spicy` category always excluded from challenge question pool — intimate questions are inappropriate for public sharing
+- `challengeRouteOnLoad()` is the entry point — called before `initAuth()` in `app.js`
+- Two new Supabase tables: `challenges` (30-day TTL) and `challenge_responses`
+- `chEsc()` defined in `challenge.js` — use for all player-supplied name rendering
 
 The game is complete and production-quality. The focus now is distribution, marketing, and eventually native app store submission.

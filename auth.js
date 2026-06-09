@@ -10,6 +10,13 @@ const sb = createClient(
 
 let currentUser = null;
 
+function isWebView() {
+  const ua = navigator.userAgent || '';
+  if (/wv|FBAN|FBAV|Instagram|Snapchat|TikTok|Line\/|WhatsApp|\[LinkedIn\]/.test(ua)) return true;
+  if (/(iPhone|iPod|iPad).*AppleWebKit/i.test(ua) && !/Safari/i.test(ua)) return true;
+  return false;
+}
+
 // ─── Init (call on DOMContentLoaded) ────────────────────────
 // Returns the user if a session already exists (including
 // after an OAuth redirect — Supabase parses the hash automatically)
