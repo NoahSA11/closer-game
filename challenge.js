@@ -352,12 +352,41 @@ async function chShowResult() {
   else if (pct >= 50) emojiEl.textContent = '💪';
   else                emojiEl.textContent = '😅';
 
+  // Question breakdown — always rendered, no network call needed
+  chRenderBreakdown();
+
   if (chPlay.challenge.show_leaderboard) {
     const board = await chDbLeaderboard(chPlay.challenge.id);
     chRenderLeaderboard(board);
   } else {
     document.getElementById('cr-leaderboard-wrap').classList.add('hidden');
   }
+}
+
+function chRenderBreakdown() {
+  const list    = document.getElementById('cr-breakdown-list');
+  const qs      = chPlay.challenge.questions;
+  const answers = chPlay.challenge.answers;
+  const guesses = chPlay.guesses;
+
+  list.innerHTML = qs.map((q, i) => {
+    const correct     = guesses[i] === answers[i];
+    const guessText   = chEsc(q.options[guesses[i]] ?? '—');
+    const correctText = chEsc(q.options[answers[i]] ?? '—');
+    const isLast      = i === qs.length - 1;
+
+    return `<div class="py-4 ${isLast ? '' : 'border-b border-[#F0EBE4]'}">
+      <div class="flex items-start gap-3">
+        <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold mt-0.5 ${correct ? 'bg-[#EBF5EF] text-[#2D6E4E]' : 'bg-[#F9EEEC] text-[#8B4A3A]'}">${correct ? '✓' : '✗'}</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-[#9A9A9A] mb-1">${chEsc(q.categoryLabel)}</p>
+          <p class="text-sm font-medium text-deep leading-snug mb-2">${chEsc(q.text)}</p>
+          <span class="text-xs px-3 py-1.5 rounded-lg font-medium ${correct ? 'bg-[#EBF5EF] text-[#2D6E4E]' : 'bg-[#F9EEEC] text-[#8B4A3A]'}">You guessed: ${guessText}</span>
+          ${!correct ? `<br><span class="text-xs px-3 py-1.5 rounded-lg font-medium bg-[#FFF8EC] text-[#92600A] inline-block mt-1.5">They chose: ${correctText}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function chRenderLeaderboard(board) {
