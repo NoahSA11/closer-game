@@ -810,6 +810,10 @@
       <button onclick="challengeStartCreate()" class="w-full mt-4 border-2 border-[#E2D9CE] text-deep font-medium py-3.5 rounded-full hover:border-deep transition-all cursor-pointer text-sm flex items-center justify-center gap-2">
         🔗 Create a "How Well Do You Know Me?" Challenge
       </button>
+
+      <button id="ch-my-challenges-btn" onclick="chOpenMyChallenge()" class="hidden w-full mt-2 border-2 border-[#C8E6D4] text-[#2D6E4E] font-medium py-3.5 rounded-full hover:border-[#2D6E4E] hover:bg-[#EBF5EF] transition-all cursor-pointer text-sm flex items-center justify-center gap-2">
+        <span id="ch-my-ch-label">📊 See how friends did</span>
+      </button>
     </div>
 
     <button onclick="showScreen('screen-landing')" class="mt-6 text-sm text-[#9A9A9A] hover:text-deep transition-colors cursor-pointer">
@@ -1281,6 +1285,7 @@
       userInfo.style.display = 'none';
     }
     showScreen('screen-setup');
+    chInitMyChallengesButton();
     // Sync game type toggle to state (e.g. when arriving via "Play with Friends" CTA)
     if (typeof selectGameType === 'function') {
       selectGameType((typeof state !== 'undefined' && state.gameType) || 'couples');
@@ -1825,7 +1830,7 @@
         <div id="ccd-questions"></div>
       </div>
 
-      <button onclick="showScreen('screen-landing')"
+      <button onclick="initSetup()"
         class="w-full bg-deep text-white font-semibold py-4 rounded-full hover:bg-deep-mid transition-all cursor-pointer text-sm">
         ← Back to Closer
       </button>

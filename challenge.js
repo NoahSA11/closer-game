@@ -573,6 +573,61 @@ function chRenderCreatorQuestionStats(responses) {
   }).join('');
 }
 
+// ── My Challenges (setup screen shortcut) ─────────────────────
+let chMyChallengesList = [];
+
+async function chInitMyChallengesButton() {
+  const btn   = document.getElementById('ch-my-challenges-btn');
+  const label = document.getElementById('ch-my-ch-label');
+  if (!btn) return;
+
+  let found = [];
+
+  // Auth-based: any device the user is signed into
+  const user = getCurrentUser();
+  if (user) {
+    const { data } = await sb.from('challenges')
+      .select('id, creator_name, created_at')
+      .eq('creator_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    found = data ?? [];
+  }
+
+  // Fallback: localStorage keys (anon creators, same device)
+  if (!found.length) {
+    try {
+      found = Object.keys(localStorage)
+        .filter(k => k.startsWith('closer-created-'))
+        .map(k => ({ id: k.replace('closer-created-', '') }));
+    } catch {}
+  }
+
+  if (!found.length) return;
+
+  chMyChallengesList = found;
+  const n = found.length;
+  label.textContent = n === 1 ? '📊 See how friends did' : `📊 My Challenges (${n})`;
+  btn.classList.remove('hidden');
+}
+
+async function chOpenMyChallenge() {
+  if (!chMyChallengesList.length) return;
+  const { id } = chMyChallengesList[0]; // most recent
+  showScreen('screen-challenge-loading');
+  try {
+    const challenge   = await chDbLoad(id);
+    chPlay.challenge  = challenge;
+    chPlay.guesses    = [];
+    chPlay.qIndex     = 0;
+    chPlay.playerName = '';
+    chPlay.result     = null;
+    await chShowCreatorDashboard();
+  } catch {
+    showScreen('screen-challenge-error');
+  }
+}
+
 function chRenderLeaderboard(board) {
   const wrap = document.getElementById('cr-leaderboard-wrap');
   const list = document.getElementById('cr-leaderboard-list');
