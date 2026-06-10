@@ -510,4 +510,59 @@ If you're picking this up from another Claude session or a different model entir
 - Two new Supabase tables: `challenges` (30-day TTL) and `challenge_responses`
 - `chEsc()` defined in `challenge.js` — use for all player-supplied name rendering
 
+---
+
+## V6.1 — Bug Fix & Audit Session (June 2026)
+
+**Context:** Full code-vs-design audit identified 9 bugs (2 critical, 3 high, 4 medium). All were addressed in a single session with one pending item that requires a Supabase dashboard change, not code.
+
+### Critical fix: saveGameSession() name collision
+
+`app.js` had a function called `saveGameSession()` that saved game state to `sessionStorage`. `auth.js` also has a function called `saveGameSession(data)` that saves completed game records to Supabase. JavaScript function name collision: calling `saveGameSession()` from `showSubjectQuestion()` silently resolved to the local version, and the call from `showEndScreen()` with a data object was also being shadowed. The leaderboard history feature was completely broken for all users — sessions were never written to Supabase.
+
+Fix: renamed the local sessionStorage function to `saveSessionToStorage()`. The Supabase version in `auth.js` keeps its name and now correctly receives all calls from `showEndScreen()`.
+
+**Lesson:** When splitting functions across files, never give functions in different files the same name. Even with clear load-order separation, runtime JS resolves to the last-defined function in scope.
+
+### Dead URL sweep
+
+Five locations still referenced `closergame.netlify.app` (the Netlify account hit bandwidth limits and became unreliable):
+- `nativeShare()` in `app.js` — the Web Share API URL
+- `COPY.couples.shareText()` in `app.js` — share message text
+- `COPY.friends.shareText()` in `app.js` — share message text
+- Share card watermark `<p>` in `index.html`
+- OG/Twitter meta tags in `<head>` of `index.html`
+
+All five now use `window.location.origin` (for JS) or the current Workers domain (for static meta tags). Future migrations to Cloudflare Pages will automatically pick up the new domain from the origin.
+
+### Guesser confirm step (Bug #8)
+
+The subject phase has always had a two-step confirm flow: tap to select, then tap "Lock In Answer →" to commit. The guesser phase had no such protection — one tap locked the answer permanently with no way to change your mind. This asymmetry was a UX regression.
+
+Added `selectGuesserAnswer(idx, container)` and `confirmGuesserAnswer()` to `app.js`, with a matching `#guesser-confirm-wrap` div in `index.html` (hidden by default, shown after first tap). Implementation mirrors the existing subject confirm pattern exactly. Speed round timeout still calls `lockGuesserAnswer()` directly — confirm is bypassed on timeout by design, same as subject speed round.
+
+New pending state vars: `_pendingGuesserIdx`, `_pendingGuesserContainer` — declared after `lockGuesserAnswer()` in `app.js`.
+
+### Service worker: challenge.js missing from cache
+
+`challenge.js` was added in V6 but was never added to `LOCAL_FILES` in `sw.js`. PWA users in offline mode would get a JS error loading the challenge flow. Fixed by adding `/challenge.js` to the array and bumping `CACHE_NAME` from `closer-v2` to `closer-v3` to force all installed users to re-cache.
+
+### Leaderboard back button context fix
+
+`showLeaderboard()` can be called from two places: the game-end screen and the landing page (for returning users viewing history). The back button was hardcoded to `showScreen('screen-end')`, so users viewing history from the landing page got dumped into the end screen.
+
+Fix: `showLeaderboard()` now captures the originating screen into `window._lbReturnScreen` before navigating. Back button reads from that variable (`window._lbReturnScreen || 'screen-landing'`).
+
+### Progress bar CSS conflict
+
+Both `#subject-progress-bar` and `#guesser-progress-bar` had `style="width:0%"` hardcoded in HTML. `app.js` updates progress via `style.transform = scaleX(...)`. The inline width:0% created a CSS specificity conflict where the width declaration was competing with the transform. Removed the hardcoded `style="width:0%"` from both elements.
+
+### Challenge create back button guard
+
+Tapping Back mid-challenge (after beginning to answer questions) would silently discard all progress. `chConfirmBack()` added to `challenge.js` — checks `chCreate.answers.length > 0` and shows a browser `confirm()` dialog before navigating away. Back button on `screen-challenge-create` updated to call `chConfirmBack()` instead of `showScreen('screen-setup')` directly.
+
+### Pending after this session
+- Supabase Auth → URL Configuration must be updated after Cloudflare Pages migration (can't do this in code — requires Supabase dashboard)
+- Cloudflare Pages migration still pending
+
 The game is complete and production-quality. The focus now is distribution, marketing, and eventually native app store submission.

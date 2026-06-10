@@ -663,3 +663,10 @@ function chRenderLeaderboard(board) {
     </div>`;
   }).join('');
 }
+
+// ── Navigation helpers ─────────────────────────────────────────
+// Back button on challenge-create screen: warn if answers are already in progress
+function chConfirmBack() {
+  if (chCreate.answers.length > 0 && !confirm('Go back? Your answers so far will be lost.')) return;
+  showScreen('screen-setup');
+}

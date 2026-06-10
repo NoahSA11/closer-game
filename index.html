@@ -7,13 +7,13 @@
   <meta name="description" content="Closer is the couples and friends game that reveals how well you really know each other. Answer privately, guess, then reveal — one question at a time.">
   <meta property="og:title" content="Closer — How well do you really know each other?">
   <meta property="og:description" content="The game that reveals how well you really know each other. Answer questions about yourself. Your partner guesses. See who knows who.">
-  <meta property="og:image" content="https://closergame.netlify.app/og-image.svg">
-  <meta property="og:url" content="https://closergame.netlify.app">
+  <meta property="og:image" content="https://closer-game.noah-adler97.workers.dev/og-image.svg">
+  <meta property="og:url" content="https://closer-game.noah-adler97.workers.dev">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Closer — How well do you really know each other?">
   <meta name="twitter:description" content="The game that reveals how well you really know each other. Answer · Guess · Reveal.">
-  <meta name="twitter:image" content="https://closergame.netlify.app/og-image.svg">
+  <meta name="twitter:image" content="https://closer-game.noah-adler97.workers.dev/og-image.svg">
   <meta name="theme-color" content="#1E3A2F">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/og-image.svg">
@@ -906,7 +906,7 @@
           <button onclick="toggleGameHelp()" class="mt-2 text-white/40 hover:text-white/70 text-[10px] cursor-pointer transition-colors">Got it ✕</button>
         </div>
         <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
-          <div id="subject-progress-bar" class="h-full bg-deep rounded-full progress-fill" style="width:0%"></div>
+          <div id="subject-progress-bar" class="h-full bg-deep rounded-full progress-fill"></div>
         </div>
       </div>
 
@@ -979,7 +979,7 @@
         </div>
       </div>
       <div class="h-1.5 bg-[#E2D9CE] rounded-full overflow-hidden">
-        <div id="guesser-progress-bar" class="h-full bg-rose rounded-full progress-fill" style="width:0%"></div>
+        <div id="guesser-progress-bar" class="h-full bg-rose rounded-full progress-fill"></div>
       </div>
     </div>
 
@@ -997,7 +997,15 @@
       <p id="guesser-q-text" class="font-serif text-2xl font-medium text-deep leading-snug">Question text loads here</p>
     </div>
 
-    <div id="guesser-options" class="space-y-2.5 pb-10"></div>
+    <div id="guesser-options" class="space-y-2.5 mb-3"></div>
+
+    <!-- Confirm lock-in: shown after tap, hidden until then -->
+    <div id="guesser-confirm-wrap" class="hidden pb-10 pt-1">
+      <button id="guesser-confirm-btn" onclick="confirmGuesserAnswer()" class="w-full text-white font-semibold py-4 rounded-full transition-all cursor-pointer text-base" style="background:#C4756A;">
+        Lock In Guess →
+      </button>
+      <p class="text-center text-[11px] text-[#9A9A9A] mt-2">Tap a different option to change your mind</p>
+    </div>
   </div>
 </section>
 
@@ -1181,7 +1189,7 @@
     </div>
 
     <!-- URL watermark -->
-    <p class="relative z-10 text-white/20 text-[9px] tracking-[0.2em] uppercase mt-auto">closergame.netlify.app</p>
+    <p id="sc-url-watermark" class="relative z-10 text-white/20 text-[9px] tracking-[0.2em] uppercase mt-auto">closer-game.noah-adler97.workers.dev</p>
   </div>
 
   <!-- Actions below card -->
@@ -1208,7 +1216,7 @@
         </div>
         <span class="font-serif text-xl font-medium text-deep">Closer</span>
       </div>
-      <button onclick="showScreen('screen-end')" class="text-sm text-[#9A9A9A] hover:text-deep cursor-pointer transition-colors">← Back</button>
+      <button onclick="showScreen(window._lbReturnScreen || 'screen-landing')" class="text-sm text-[#9A9A9A] hover:text-deep cursor-pointer transition-colors">← Back</button>
     </div>
 
     <div class="w-full max-w-2xl">
@@ -1399,6 +1407,7 @@
       showScreen('screen-login');
       return;
     }
+    window._lbReturnScreen = document.querySelector('.screen.active')?.id || 'screen-landing';
     showScreen('screen-leaderboard');
     renderLeaderboard();
   }
@@ -1595,7 +1604,7 @@
         </div>
         <span class="font-serif text-xl font-medium text-deep">Closer</span>
       </div>
-      <button onclick="showScreen('screen-setup')" class="text-sm text-[#9A9A9A] hover:text-deep transition-colors cursor-pointer">← Back</button>
+      <button onclick="chConfirmBack()" class="text-sm text-[#9A9A9A] hover:text-deep transition-colors cursor-pointer">← Back</button>
     </div>
 
     <!-- Phase 1: Name entry -->

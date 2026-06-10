@@ -34,7 +34,7 @@ const COPY = {
       ? 'Strong session. You know each other well.'
       : 'Good session, some surprises in there.',
     shareText: (p1, p2, match, total, pct) =>
-      `${p1} & ${p2} just played Closer: ${match}/${total} matches, ${pct}% compatibility. Can you beat us? closergame.netlify.app`,
+      `${p1} & ${p2} just played Closer: ${match}/${total} matches, ${pct}% compatibility. Can you beat us? ${window.location.origin}`,
     roundPerfect: (g, s) => `Perfect round. ${g} knows ${s} cold.`,
     roundSolid:   (g)    => `Solid. ${g} got most of them.`,
   },
@@ -47,7 +47,7 @@ const COPY = {
       ? 'Solid session. You really know each other.'
       : 'Good effort. More to discover.',
     shareText: (p1, p2, match, total, pct) =>
-      `${p1} & ${p2} just played Closer with friends: ${match}/${total} matches, ${pct}% in sync. closergame.netlify.app`,
+      `${p1} & ${p2} just played Closer with friends: ${match}/${total} matches, ${pct}% in sync. ${window.location.origin}`,
     roundPerfect: (g, s) => `Perfect round. ${g} knows ${s} well.`,
     roundSolid:   (g)    => `Solid. ${g} had ${s} figured out.`,
   }
@@ -357,7 +357,7 @@ function showRoundIntro() {
 // ─── Subject Phase ────────────────────────────────────────────
 
 function showSubjectQuestion() {
-  saveGameSession();
+  saveSessionToStorage();
   showScreen('screen-subject');
   clearSpeedTimer();
   const q = getCurrentQuestions()[state.currentQIndex];
@@ -505,9 +505,15 @@ function showGuesserQuestion() {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
     btn.innerHTML = `<span style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:#F2EBE0;color:#5A5A5A;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700">${String.fromCharCode(65 + idx)}</span><span style="flex:1">${opt}</span>`;
-    btn.onclick = () => lockGuesserAnswer(idx, btn, container);
+    btn.onclick = () => selectGuesserAnswer(idx, container);
     container.appendChild(btn);
   });
+
+  // Reset confirm state for this question
+  _pendingGuesserIdx = -1;
+  _pendingGuesserContainer = container;
+  const gCW = document.getElementById('guesser-confirm-wrap');
+  if (gCW) gCW.classList.add('hidden');
 
   if (isSpeedRound()) {
     startSpeedTimer('guesser-speed-timer', 'guesser-timer-ring', 'guesser-timer-num', () => {
@@ -538,6 +544,27 @@ function lockGuesserAnswer(idx, btn, container) {
       startReveal();
     }
   }, 380);
+}
+
+let _pendingGuesserIdx = -1;
+let _pendingGuesserContainer = null;
+
+function selectGuesserAnswer(idx, container) {
+  _pendingGuesserIdx = idx;
+  _pendingGuesserContainer = container;
+  container.querySelectorAll('.option-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  const confirmWrap = document.getElementById('guesser-confirm-wrap');
+  if (confirmWrap) confirmWrap.classList.remove('hidden');
+}
+
+function confirmGuesserAnswer() {
+  if (_pendingGuesserIdx < 0 || !_pendingGuesserContainer) return;
+  const wrap = document.getElementById('guesser-confirm-wrap');
+  if (wrap) wrap.classList.add('hidden');
+  lockGuesserAnswer(_pendingGuesserIdx, null, _pendingGuesserContainer);
+  _pendingGuesserIdx = -1;
 }
 
 // ─── Reveal ───────────────────────────────────────────────────
@@ -782,6 +809,9 @@ function shareResult() {
       : `Think you can beat ${compatPct}%?`;
   }
 
+  const watermarkEl = document.getElementById('sc-url-watermark');
+  if (watermarkEl) watermarkEl.textContent = window.location.hostname;
+
   const overlay = document.getElementById('share-card-overlay');
   if (overlay) overlay.classList.remove('hidden');
 }
@@ -797,7 +827,7 @@ function nativeShare() {
   const totalQuestions = state.totalRounds * state.questionsPerRound;
   const compatPct      = Math.round((matchCount / totalQuestions) * 100);
   const text = COPY[state.gameType].shareText(state.p1Name, state.p2Name, matchCount, totalQuestions, compatPct);
-  const url  = 'https://closergame.netlify.app';
+  const url  = window.location.origin;
 
   if (navigator.share) {
     navigator.share({ title: 'Closer', text, url }).catch(() => {});
@@ -855,7 +885,7 @@ function selectMode(mode) {
 
 const GAME_SESSION_KEY = 'closer-game-session';
 
-function saveGameSession() {
+function saveSessionToStorage() {
   try {
     sessionStorage.setItem(GAME_SESSION_KEY, JSON.stringify({
       p1Name: state.p1Name, p2Name: state.p2Name,

@@ -2,7 +2,7 @@
 // Strategy: cache-first for local files, network-first for CDN
 // Bump CACHE_NAME version string to force all clients to update
 
-const CACHE_NAME = 'closer-v2';
+const CACHE_NAME = 'closer-v3';
 
 const LOCAL_FILES = [
   '/',
@@ -11,6 +11,7 @@ const LOCAL_FILES = [
   '/questions.js',
   '/auth.js',
   '/leaderboard.js',
+  '/challenge.js',
   '/styles.css',
   '/manifest.json',
   '/og-image.svg',
